@@ -23,10 +23,8 @@
   "homepage": "https://github.com/dropofwill/hmm-intro",
   "devDependencies": {
     "grunt": "^0.4.5",
-    "grunt-contrib-requirejs": "^0.4.4"
-  },
-  "dependencies": {
-    "d3": "^3.5.5",
-    "lodash": "^3.3.0"
+    "grunt-contrib-coffee": "^0.13.0",
+    "grunt-contrib-requirejs": "^0.4.4",
+    "grunt-contrib-watch": "^0.6.1"
   }
 }

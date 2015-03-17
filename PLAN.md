@@ -28,7 +28,11 @@
 
   c. Applications
 
-    ### Problem 1: Likelihood, calculated with The Forward Algorithm
+    Forward takes the sum, returns a probability
+
+    Viterbi takes the max, and keeps backpointers to return a path and a probability
+
+    ### Problem 1: Likelihood, calculated with the Forward Algorithm
 
     Given an HMM lambda = (A,B)
     And an observation sequence O
@@ -37,7 +41,9 @@
 
     lambda(A,B) and O -> P(O|lambda)
 
-    ### Problem 2: Decoding
+    In other words what is the probability of a given observation sequence
+
+    ### Problem 2: Decoding, calculated with the Viterbi Algorithm
 
     Given an observation sequence O
     And an HMM lambda = (A,B)
@@ -46,7 +52,7 @@
 
     lambda(A,B) and O -> Q
 
-    ### Problem 3: Learning
+    ### Problem 3: Learning: calculate with the Forward-Backward Algorithm
 
     Given an observation sequence O
     And the set of states in the HMM

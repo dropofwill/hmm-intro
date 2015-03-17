@@ -1,0 +1,50 @@
+body {
+  font-family: Merriweather, serif;
+}
+
+h1, h2 {
+  color: #001f3f;
+}
+
+h3, h4, h5, h6 {
+  color: #3D9970;
+}
+
+a {
+  color: #001f3f;
+}
+
+.content {
+  max-width: 50em;
+  width: 100%:
+  padding: 1em;
+  margin: 0 auto;
+}
+
+.MathJax_Display {
+  text-align: left !important;
+}
+
+table {
+  /* color: #333; /1* Lighten up font color *1/ */
+  font-family: Helvetica, Arial, sans-serif; /* Nicer font */
+  width: 640px;
+  border-collapse:
+  collapse; border-spacing: 0;
+}
+
+td, th {
+  border-bottom: 1px solid #CCC;
+  border-top: 1px solid #CCC;
+  height: 30px;
+  text-align: left;
+}
+
+th {
+  /* background: #F3F3F3; /1* Light grey background *1/ */
+  font-weight: bold; /* Make sure they're bold */
+}
+
+td {
+  padding: 10px;
+}

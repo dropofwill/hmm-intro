@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Hidden Markov Model Explained Visually - Will Paul</title>
+    <meta name="description" content="Hidden Markov Model Explained Visually - Will Paul">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <link href='http://fonts.googleapis.com/css?family=Merriweather:400,900italic,900,700italic,700,400italic,300italic,300&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="content">
+      <h1>Hidden Markov Models Explained Visually Prototype</h1>
+      <h3>by Will Paul <a href="index.html">Prototype</a></h3>
+
+      <h2>Introduction</h2>
+
+      <p>Hidden Markov Models (or HMMs) are kind of scary by default, who's Markov, what's hidden, and why do I care? To make matters worse most textbooks start with a technical definition like:</p>
+
+      <table>
+        <tr>
+          <td>
+            $$ Q = q_{1}q_{2}...q_{N} $$
+          </td>
+
+          <td>
+            a set of N states
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            $$ A = a_{11}a_{12}...a_{n1}..a_{nn} $$
+          </td>
+
+          <td>
+            a transition probability matrix
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            $$ O = o_{1}o_{2}...o_{T} $$
+          </td>
+
+          <td>
+            A sequence of T observations, from a vocabulary $$ V = v_1,v_2,...v_v $$
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            $$ B = b_{i}(o_{t}) $$
+          </td>
+
+          <td>
+            A sequence of observation likelihoods.
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            $$ q_{0},q_{F} $$
+          </td>
+
+          <td>
+            A start state and final state.
+          </td>
+        </tr>
+      </table>
+
+      <p>And only moments later jump into dynamic programming and efficient methods of solving them. There is nothing wrong with efficient algorithms or mathematical formalism, but before any of that will make sense the problem should be motivated and simple examples given to build intuition for what is actually going on.</p>
+
+      <h2>Technical Approach</h2>
+
+      <h3>Library Dependencies</h3>
+
+      <ul>
+        <li>D3.js, for the physics in the force layout</li>
+        <li>Lodash.js for common functional programming paradigms</li>
+        <li>(Probably) Mathjax for typesetting math stuff as necessary</li>
+      </ul>
+
+      <h2>Topics and Source Material</h2>
+
+      <p>Most of the material and knowledge I put forward here will be from Natural Language Processing textbook, and sources cited within. I will be sure to cite sources in the visualization as well.</p>
+
+      <h3>Knowledge Dependencies</h3>
+
+      <p>I want to limit the dependencies as much as possible so that just about anyone can walk through the experience and take at least <em>something</em> of value away from it.</p>
+
+      <p>That said I'm not going to have space to define every concept necessary, so I'll be offloading several key concepts off to others as necessary, whenever possible using a visual explanation that follows in kind</p>
+
+      <ul>
+        <li>
+          Probability concepts, especially conditional probability is going to be pretty fundamental to any discussion of models. Luckily someone else put together an excellent conditional probability visualization that should develop enough intuition for anyone to move through this material.
+        </li>
+      </ul>
+
+      <h3>Learn Along the Way</h3>
+
+      <ul>
+        <li>Finite State Automata</li>
+        <li>Markov Chains</li>
+        <li>(Maybe, if it proves useful) FSA Transducers</li>
+      </ul>
+
+      <h3>End Goals</h3>
+
+      <p>The end goal for a user of this project is that they be able to understand the underlying problems that an HMM can be used to solve and at a high level how these get solved (e.g. what the algorithm does generally). This should put a user in a good position to dive into a technical textbook and begin implementing the solutions for themselves.</p>
+
+      <h4>Problem 1: Likelihood, calculated with the Forward Algorithm</h4>
+
+      <p>Given an HMM $$ \lambda = (A,B) $$<br/>
+      And an observation sequence <em>O</em><br/>
+      Determine the likelihood of $$ P(O|\lambda) $$</p>
+
+      $$ \therefore $$
+      $$ \lambda(A,B) \land O \rightarrow P(O|\lambda) $$
+
+      <p>In other words what is the probability of a given observation sequence</p>
+
+
+      <h4>Problem 2: Decoding, calculated with the Viterbi Algorithm</h4>
+
+      <p>Given an observation sequence <em>O</em><br />
+      And an HMM $$ \lambda = (A,B) $$ <br />
+      Discover the best hidden state sequence Q</p>
+
+      $$ \therefore $$
+      $$ \lambda(A,B) \land O \rightarrow Q $$
+
+
+      <h4>Problem 3: Learning: calculate with the Forward-Backward Algorithm</h4>
+
+      <p>Given an observation sequence O<br/>
+      And the set of states in the HMM <br/>
+      Learn the HMM parameters A and B </p>
+
+      $$ \therefore $$
+      $$ O \land Q \rightarrow \lambda(A,B) $$
+
+    </div>
+
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+    <script src="lib/main.js"></script>
+  </body>
+</html>
+

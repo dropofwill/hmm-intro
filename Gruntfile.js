@@ -1,6 +1,6 @@
 module.exports = function(grunt) {
-	[ 'grunt-contrib-coffee',
-		'grunt-contrib-watch' ].forEach(grunt.loadNpmTasks);
+  [ 'grunt-contrib-coffee',
+    'grunt-contrib-watch' ].forEach(grunt.loadNpmTasks);
 
   grunt.initConfig({
     coffee: {
@@ -16,12 +16,12 @@ module.exports = function(grunt) {
     },
 
     watch: {
-			js: {
-				files: 'src/*.coffee',
-				tasks: ['dev']
-			}
+      js: {
+        files: 'src/*.coffee',
+        tasks: ['dev']
+      }
     }
   });
 
-	grunt.registerTask('dev', [ 'coffee:compile' ]);
+  grunt.registerTask('dev', [ 'coffee:compile' ]);
 };

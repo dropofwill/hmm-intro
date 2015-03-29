@@ -44,7 +44,12 @@ class Point
   ###
   # Immutable and chainable division by a scalar
   ###
-  div: (scalar) -> new Point(x: @x / scalar, y: @y / scalar)
+  div: (scalar) ->
+    if scalar isnt 0
+      new Point(x: @x / scalar, y: @y / scalar)
+    else
+      console.warn("Can't divide by 0")
+      this
 
   ###
   # Find the midpoint by halving the coords of a point
@@ -70,11 +75,12 @@ class Point
 
   project: (point) ->
 
-  normalize: (len = 1) ->
-    # {mag, theta} = @get_polar(x: @x, y: @y)
-    # l(@mag, @theta)
-    scale = if @mag isnt 0 then len / @mag else 0
-    new Point(mag: scale, theta: @theta, true)
+  normalize: () ->
+    if @mag isnt 0
+      @div(@mag)
+    else
+      console.warn("Can't normalize 0 vector")
+      this
 
   ###
   # Rotate about the x-axis or an optional center point

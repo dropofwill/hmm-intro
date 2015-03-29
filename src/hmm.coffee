@@ -18,8 +18,8 @@ app.hmm = () ->
     link_dist: 200
     stroke_style: "#999999"
     fill_style: "#darkslategray"
-    node_radius: 10
-    square_width: 15
+    node_radius: 20
+    square_width: 20
     center: undefined
 
   # main initializer takes data and dom element as input
@@ -59,16 +59,16 @@ app.hmm = () ->
 
     # draw nodes
     my.ctx.fillStyle = "darkslategray"
-    my.ctx.globalAlpha = "0.5"
+    my.ctx.globalAlpha = "1"
     my.ctx.beginPath()
 
     my.graph.nodes.forEach (d) ->
       my.ctx.moveTo(d.x, d.y)
 
       if d.hidden
-        my.ctx.rect(d.x, d.y, 15, 15)
+        my.ctx.rect(d.x, d.y, my.square_width, my.square_width)
       else
-        my.ctx.arc(d.x, d.y, 10, 0, 2 * Math.PI)
+        my.ctx.arc(d.x, d.y, my.node_radius, 0, 2 * Math.PI)
 
     my.ctx.fill()
 
@@ -91,10 +91,11 @@ app.hmm = () ->
       my.ctx.fillRect(ctrl.x, ctrl.y, 7, 7)
       my.ctx.restore()
 
-  draw_singlenode_arc = (src) ->
+  draw_singlenode_arc = (src, r=40) ->
     my.ctx.beginPath()
-    vec = src.sub(my.center).normalize().add(src)
-    my.ctx.arc(vec.x, vec.y, 10, 0, 2 * Math.PI)
+    vec = src.sub(my.center).normalize().mul(r).add(src)
+    # l(vec)
+    my.ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
     my.ctx.stroke()
 
   ###

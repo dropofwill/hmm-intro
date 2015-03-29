@@ -77,6 +77,8 @@ app.hmm = () ->
   ###
   draw_multinode_arc = (src, trg, ctrl_r=40, debug=false) ->
     vec = trg.sub(src)
+    # src = vec.normalize().mul(20).rotate(Math.PI/4).add(src)
+    trg = vec.normalize().mul(25).rotate(3 * Math.PI / 4).add(trg)
     mid = vec.midpoint()
     ctrl = new app.Point(theta: Math.PI + vec.theta, mag: ctrl_r)
       .add(src).add(mid)
@@ -100,7 +102,7 @@ app.hmm = () ->
 
   draw_quad_arrow = (src, ctrl, trg) ->
     arrow_angle = Math.atan2(ctrl.x - trg.x, ctrl.y - trg.y) + Math.PI
-    arrow_width = 10
+    arrow_width = 15
     shift = Math.PI / 6
 
     my.ctx.beginPath()

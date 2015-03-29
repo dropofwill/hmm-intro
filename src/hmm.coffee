@@ -43,19 +43,28 @@ app.hmm = () ->
 
     # draw links
     my.ctx.strokeStyle = my.stroke_style
-    my.ctx.beginPath()
+    # my.ctx.beginPath()
 
     my.graph.links.forEach (d) ->
       src = new app.Point(x: d.source.x, y: d.source.y)
       trg = new app.Point(x: d.target.x, y: d.target.y)
 
+      # Check for edges going to the same node
       if not trg.equals(src)
         vec = trg.sub(src)
         mid = vec.midpoint()
+
         arc_point = new app.Point(theta: Math.PI + vec.theta, mag: 15, true)
           .add(src).add(mid)
-        arc_center = new app.Point(theta: Math.PI + vec.theta, mag: 100, true)
+        arc_center = new app.Point(theta: Math.PI + vec.theta, mag: 40, true)
           .add(src).add(mid)
+
+        r = arc_center.get_dist(trg)
+        start_angle = Math.atan2(arc_center.x - trg.x, arc_center.y - trg.y)
+
+        my.ctx.beginPath()
+        my.ctx.moveTo(src.x, src.y)
+        my.ctx.quadraticCurveTo(arc_center.x, arc_center.y, trg.x, trg.y)
 
         # l(arc_point)
         # arc_point = mid.rotate(Math.PI/2).add(src)
@@ -67,22 +76,23 @@ app.hmm = () ->
         # my.ctx.fillStyle = "orange"
 
         my.ctx.globalAlpha = "1"
-        my.ctx.fillStyle = "blue"
+        # my.ctx.fillStyle = "blue"
         # my.ctx.arc(vec.x, vec.y, 10, 0, 2 * Math.PI)
-        my.ctx.fillRect(vec.x, vec.y, 5, 5)
+        # my.ctx.fillRect(vec.x, vec.y, 5, 5)
 
-        my.ctx.fillStyle = "black"
+        # my.ctx.fillStyle = "black"
         # my.ctx.arc(mid.x, mid.y, 10, 0, 2 * Math.PI)
-        my.ctx.fillRect(mid.x, mid.y, 5, 5)
+        # my.ctx.fillRect(mid.x, mid.y, 5, 5)
 
         my.ctx.fillStyle = "red"
         # my.ctx.arc(arc_point.x, arc_point.y, 10, 0, 2 * Math.PI)
-        my.ctx.fillRect(arc_point.x, arc_point.y, 5, 5)
+        # my.ctx.fillRect(arc_point.x, arc_point.y, 5, 5)
         my.ctx.fillRect(arc_center.x, arc_center.y, 7, 7)
 
-        my.ctx.moveTo(src.x, src.y)
-        my.ctx.lineTo(arc_point.x, arc_point.y)
-        my.ctx.lineTo(trg.x, trg.y)
+        # my.ctx.beginPath()
+        # my.ctx.moveTo(src.x, src.y)
+        # my.ctx.lineTo(arc_point.x, arc_point.y)
+        # my.ctx.lineTo(trg.x, trg.y)
 
         # pts = link_points(d)
         # mid = rotate(pts.mid, pts.target, Math.PI/2)
@@ -91,7 +101,7 @@ app.hmm = () ->
         # my.ctx.lineTo(pts.target.x, pts.target.y)
         # my.ctx.arc(d.target.x, d.target.y, 50, 0, Math.Pi)
         # l(link_points(d))
-    my.ctx.stroke()
+        my.ctx.stroke()
 
     # draw nodes
     my.ctx.fillStyle = "darkslategray"

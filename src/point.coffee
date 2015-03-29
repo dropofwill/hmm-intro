@@ -107,8 +107,11 @@ class Point
   get_mag: (cart) ->
     Math.sqrt(cart.x * cart.x + cart.y * cart.y)
 
-  get_dist: (cart1, cart2) ->
-    Math.sqrt(Math.pow(cart1.x - cart2.x, 2)+ Math.pow(cart1.y - cart2.y, 2))
+  ###
+  # Given params {x, y} of another point return the distance from this point
+  ###
+  get_dist: (cart) ->
+    Math.sqrt(Math.pow(@x - cart.x, 2)+ Math.pow(@y - cart.y, 2))
 
 
 p1 = new Point(x: 1, y: 2)

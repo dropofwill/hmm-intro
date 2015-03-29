@@ -14,13 +14,15 @@ app = window.configApp()
 # inspired by Processing's vector implementation
 ###
 class Point
-  constructor: (opts, fromAngle=false) ->
-    if not fromAngle
+  constructor: (opts) ->
+    if opts.x? and opts.y?
       {@x, @y} = opts
       {@mag, @theta} = @get_polar(opts)
-    else
+    else if opts.mag? and opts.theta?
       {@mag, @theta} = opts
       {@x, @y} = @get_cartesian(opts)
+    else
+      console.warn("Neither {x,y} or {mag, theta} pairs passed to constructor")
 
   ###
   # Immutable and chainable addition of two points
@@ -69,8 +71,10 @@ class Point
   project: (point) ->
 
   normalize: (len = 1) ->
-    current = @get_mag(x: @x, y: @y)
-    scale = if current isnt 0 then len / current else 0
+    # {mag, theta} = @get_polar(x: @x, y: @y)
+    # l(@mag, @theta)
+    scale = if @mag isnt 0 then len / @mag else 0
+    new Point(mag: scale, theta: @theta, true)
 
   ###
   # Rotate about the x-axis or an optional center point
@@ -115,8 +119,9 @@ class Point
 
 
 p1 = new Point(x: 1, y: 2)
-p2 = new Point(mag: 10, theta: Math.PI/2, true)
+p2 = new Point(mag: 10, theta: Math.PI/2)
 l(p2)
+l(p2.normalize())
 # l(p1.add(p2))
 # l(p1.sub(p2))
 # l(p2.add(p2))

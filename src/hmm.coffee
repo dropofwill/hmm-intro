@@ -20,6 +20,7 @@ app.hmm = () ->
     fill_style: "#darkslategray"
     node_radius: 10
     square_width: 15
+    center: undefined
 
   # main initializer takes data and dom element as input
   initialize = (d, el) ->
@@ -28,6 +29,7 @@ app.hmm = () ->
     my.graph = d
     my.canvas = el
     my.ctx = my.canvas.node().getContext("2d")
+    my.center = new app.Point(x: my.width/2, y: my.height/2)
 
     my.force
       .nodes(my.graph.nodes)
@@ -52,6 +54,8 @@ app.hmm = () ->
       # Check for edges going to the same node
       if not trg.equals(src)
         draw_multinode_arc(src, trg)
+      else
+        draw_singlenode_arc(src)
 
     # draw nodes
     my.ctx.fillStyle = "darkslategray"
@@ -75,15 +79,23 @@ app.hmm = () ->
   draw_multinode_arc = (src, trg, ctrl_r=40, debug=false) ->
     vec = trg.sub(src)
     mid = vec.midpoint()
-    ctrl = new app.Point(theta: Math.PI + vec.theta, mag: ctrl_r, true)
+    ctrl = new app.Point(theta: Math.PI + vec.theta, mag: ctrl_r)
       .add(src).add(mid)
 
     draw_quad_curve(src, ctrl, trg)
 
     if debug
+      my.ctx.save()
       my.ctx.globalAlpha = "1"
       my.ctx.fillStyle = "red"
       my.ctx.fillRect(ctrl.x, ctrl.y, 7, 7)
+      my.ctx.restore()
+
+  draw_singlenode_arc = (src) ->
+    my.ctx.beginPath()
+    vec = src.sub(my.center).normalize().add(src)
+    my.ctx.arc(vec.x, vec.y, 10, 0, 2 * Math.PI)
+    my.ctx.stroke()
 
   ###
   # Abstraction around quadraticCurveTo using our Point object

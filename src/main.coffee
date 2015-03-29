@@ -1,17 +1,14 @@
-DEBUG = true
+app = window.configApp()
 
-l = (vals...) ->
-  vals.forEach (v) ->
-    console.log(v) if DEBUG
-
-app = app || {}
-app.example1 = undefined
+app.example = undefined
 
 window.onload = () ->
   d3.json "lib/data.json", (data) ->
-    a_canvas = d3.select("body").append("canvas")
-      .attr("width", 960)
-      .attr("height", 500)
+    example_canvas = d3.select("body")
+      .append("canvas")
+        .attr("width", 960)
+        .attr("height", 500)
 
-    app.example1 = app.hmm()
-    app.example1(data, a_canvas)
+    l('main', app)
+    app.example = app.hmm()
+    app.example(data, example_canvas)

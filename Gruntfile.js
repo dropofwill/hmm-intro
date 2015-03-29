@@ -5,6 +5,21 @@ module.exports = function(grunt) {
   grunt.initConfig({
     coffee: {
       compile: {
+        // 1:1 mapping through globs
+        expand: true,
+        flatten: true,
+        cwd: 'src/',
+        src: ['*.coffee'],
+        dest: 'lib/',
+        ext: '.js',
+        options: {
+          sourceMap: true
+        }
+      }
+    },
+
+    coffee_concat: {
+      compile: {
         options: {
           sourceMap: true
         },

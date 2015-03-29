@@ -31,8 +31,6 @@
 
   * Lodash.js
 
-  * Require.js
-
 * Credit external code fragments in documentation
 
 * Separate concerns into multiple scripts

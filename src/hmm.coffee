@@ -1,4 +1,9 @@
-app = app || {}
+app = window.configApp()
+
+### exit if already defined ###
+if app.hmm?
+  l("app.hmm already defined")
+  return
 
 # Closure for constructing an HMM model on arbitrary data
 app.hmm = () ->
@@ -27,6 +32,7 @@ app.hmm = () ->
     my.force
       .nodes(my.graph.nodes)
       .size([my.width, my.height])
+      .alpha(0.001)
       .links(my.graph.links)
       .linkDistance(my.link_dist)
       .on("tick", tick)
@@ -40,17 +46,56 @@ app.hmm = () ->
     my.ctx.beginPath()
 
     my.graph.links.forEach (d) ->
-      pts = link_points(d)
-      mid = rotate(pts.mid, pts.target, Math.PI/2)
-      my.ctx.moveTo(pts.source.x, pts.source.y)
-      my.ctx.lineTo(mid.x, mid.y)
-      my.ctx.lineTo(pts.target.x, pts.target.y)
-      # my.ctx.arc(d.target.x, d.target.y, 50, 0, Math.Pi)
-      # l(link_points(d))
+      src = new app.Point(x: d.source.x, y: d.source.y)
+      trg = new app.Point(x: d.target.x, y: d.target.y)
+
+      if not trg.equals(src)
+        vec = trg.sub(src)
+        mid = vec.midpoint()
+        arc_point = new app.Point(theta: Math.PI + vec.theta, mag: 15, true)
+          .add(src).add(mid)
+        arc_center = new app.Point(theta: Math.PI + vec.theta, mag: 100, true)
+          .add(src).add(mid)
+
+        # l(arc_point)
+        # arc_point = mid.rotate(Math.PI/2).add(src)
+        # mid = mid.rotate(Math.PI/2, mid).add(src)
+
+        # my.ctx.fillRect(src.x, src.y, 5, 5)
+        # my.ctx.fillStyle = "green"
+        # my.ctx.fillRect(trg.x, trg.y, 5, 5)
+        # my.ctx.fillStyle = "orange"
+
+        my.ctx.globalAlpha = "1"
+        my.ctx.fillStyle = "blue"
+        # my.ctx.arc(vec.x, vec.y, 10, 0, 2 * Math.PI)
+        my.ctx.fillRect(vec.x, vec.y, 5, 5)
+
+        my.ctx.fillStyle = "black"
+        # my.ctx.arc(mid.x, mid.y, 10, 0, 2 * Math.PI)
+        my.ctx.fillRect(mid.x, mid.y, 5, 5)
+
+        my.ctx.fillStyle = "red"
+        # my.ctx.arc(arc_point.x, arc_point.y, 10, 0, 2 * Math.PI)
+        my.ctx.fillRect(arc_point.x, arc_point.y, 5, 5)
+        my.ctx.fillRect(arc_center.x, arc_center.y, 7, 7)
+
+        my.ctx.moveTo(src.x, src.y)
+        my.ctx.lineTo(arc_point.x, arc_point.y)
+        my.ctx.lineTo(trg.x, trg.y)
+
+        # pts = link_points(d)
+        # mid = rotate(pts.mid, pts.target, Math.PI/2)
+        # my.ctx.moveTo(pts.source.x, pts.source.y)
+        # my.ctx.lineTo(mid.x, mid.y)
+        # my.ctx.lineTo(pts.target.x, pts.target.y)
+        # my.ctx.arc(d.target.x, d.target.y, 50, 0, Math.Pi)
+        # l(link_points(d))
     my.ctx.stroke()
 
     # draw nodes
     my.ctx.fillStyle = "darkslategray"
+    my.ctx.globalAlpha = "0.5"
     my.ctx.beginPath()
 
     my.graph.nodes.forEach (d) ->
@@ -108,26 +153,42 @@ app.hmm = () ->
     x: x
     y: y
 
-  # Cartesian rotation
+  ###
+  # Rotate a line defined by two Cartesian points by radian rotation
+  ###
   rotate = (src, trg, radians) ->
     cos = Math.cos(radians)
     sin = Math.sin(radians)
-    # apply 2d rotation matrix to get rotated x and y
+    ### Apply 2d rotation matrix to get rotated x and y ###
     x: (cos * (trg.x - src.x)) - (sin * (trg.y - src.y)) + src.x
     y: (sin * (trg.x - src.x)) + (cos * (trg.y - src.y)) + src.y
 
+  ###
   # Calculates the Pythagorean theorem
+  ###
   magnitude = (dx, dy) ->
     Math.sqrt(dx * dx + dy * dy)
 
+  ###
+  # Find the midpoint of the line defined by two points
+  ####
   midpoint = (p1, p2) ->
     x: (p1.x + p2.x)/2
     y: (p1.y + p2.y)/2
 
+  ###
+  # Find the slope of the line defined by two points
+  ###
   slope = (p1, p2) ->
     p2.y - p1.y / p2.x - p1.x
 
+  ###
+  # Find the slope perpendicular to a given slope
+  ###
   perp = (slope) ->
+    ### perpendicular slope is just the negative reciprocal ###
     -1 * 1/slope
 
   return initialize
+
+l('hmm', app)

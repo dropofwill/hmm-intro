@@ -34,9 +34,9 @@ app.hmm = () ->
 
     my.force
       .nodes(my.graph.nodes)
+      .links(my.graph.links)
       .size([my.width, my.height])
       .alpha(0.001)
-      .links(my.graph.links)
       .linkDistance(my.link_dist)
       .on("tick", tick)
       .start()
@@ -72,13 +72,19 @@ app.hmm = () ->
     my.ctx.fill()
 
   ###
-  # Draw arc between two different nodes, takes two cartesian points
-  # e.g. anything that responds to {x,y}
+  # Draw arc between two different nodes, takes two Points and optionally the
+  # nodes radius (r) and how far out the quads ctrl point goes out
   ###
-  draw_multinode_arc = (src, trg, ctrl_r=40, debug=false) ->
+  draw_multinode_arc = (src, trg, r=20, ctrl_r=40) ->
     vec = trg.sub(src)
+    # Could stop drawing src from center with the following:
     # src = vec.normalize().mul(20).rotate(Math.PI/4).add(src)
-    trg = vec.normalize().mul(25).rotate(3 * Math.PI / 4).add(trg)
+    #
+    ### Use relative vector between src and trg to get the angle
+    # then expand to just a little bit larger than the nodes radius
+    # then rotate around so that it is no longer at the center
+    # finally convert the vector back to abs coordinates by adding trg ###
+    trg = vec.normalize().mul(r + 5).rotate(3 * Math.PI / 4).add(trg)
     mid = vec.midpoint()
     ctrl = new app.Point(theta: Math.PI + vec.theta, mag: ctrl_r)
       .add(src).add(mid)
@@ -86,12 +92,11 @@ app.hmm = () ->
     draw_quad_curve(src, ctrl, trg)
     draw_quad_arrow(src, ctrl, trg)
 
-    if debug
-      my.ctx.save()
-      my.ctx.globalAlpha = "1"
-      my.ctx.fillStyle = "red"
-      my.ctx.fillRect(ctrl.x, ctrl.y, 7, 7)
-      my.ctx.restore()
+    # my.ctx.save()
+    # my.ctx.globalAlpha = "1"
+    # my.ctx.fillStyle = "red"
+    # my.ctx.fillRect(ctrl.x, ctrl.y, 7, 7)
+    # my.ctx.restore()
 
   draw_singlenode_arc = (src, r=40) ->
     my.ctx.beginPath()

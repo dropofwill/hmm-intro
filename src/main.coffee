@@ -10,5 +10,4 @@ window.onload = () ->
         .attr("height", 500)
 
     l('main', app)
-    app.example = app.hmm()
-    app.example(data, example_canvas)
+    app.example = new app.HMM(data, example_canvas)

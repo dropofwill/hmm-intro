@@ -17,6 +17,7 @@ app.hmm = () ->
     height: 500
     link_dist: 200
     stroke_style: "#999999"
+    stroke_width: "4"
     fill_style: "#darkslategray"
     node_radius: 20
     square_width: 20
@@ -42,10 +43,8 @@ app.hmm = () ->
 
   tick = () ->
     my.ctx.clearRect(0, 0, my.width, my.height)
-
-    # draw links
     my.ctx.strokeStyle = my.stroke_style
-    # my.ctx.beginPath()
+    my.ctx.lineWidth = my.stroke_width
 
     my.graph.links.forEach (d) ->
       src = new app.Point(x: d.source.x, y: d.source.y)
@@ -59,16 +58,16 @@ app.hmm = () ->
 
     # draw nodes
     my.ctx.fillStyle = "darkslategray"
-    my.ctx.globalAlpha = "1"
+    my.ctx.globalAlpha = ".4"
     my.ctx.beginPath()
 
     my.graph.nodes.forEach (d) ->
       my.ctx.moveTo(d.x, d.y)
 
-      if d.hidden
-        my.ctx.rect(d.x, d.y, my.square_width, my.square_width)
-      else
+      if not d.hidden
         my.ctx.arc(d.x, d.y, my.node_radius, 0, 2 * Math.PI)
+      # else
+      #   my.ctx.rect(d.x, d.y, my.square_width, my.square_width)
 
     my.ctx.fill()
 
@@ -83,6 +82,7 @@ app.hmm = () ->
       .add(src).add(mid)
 
     draw_quad_curve(src, ctrl, trg)
+    draw_quad_arrow(src, ctrl, trg)
 
     if debug
       my.ctx.save()
@@ -96,6 +96,20 @@ app.hmm = () ->
     vec = src.sub(my.center).normalize().mul(r).add(src)
     # l(vec)
     my.ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
+    my.ctx.stroke()
+
+  draw_quad_arrow = (src, ctrl, trg) ->
+    arrow_angle = Math.atan2(ctrl.x - trg.x, ctrl.y - trg.y) + Math.PI
+    arrow_width = 10
+    shift = Math.PI / 6
+
+    my.ctx.beginPath()
+    ### Math from here: http://stackoverflow.com/questions/27778951/drawing-an-arrow-on-an-html5-canvas-quadratic-curve ###
+    my.ctx.moveTo(trg.x - (arrow_width * Math.sin(arrow_angle - shift)),
+                  trg.y - (arrow_width * Math.cos(arrow_angle - shift)))
+    my.ctx.lineTo(trg.x, trg.y)
+    my.ctx.lineTo(trg.x - (arrow_width * Math.sin(arrow_angle + shift)),
+                  trg.y - (arrow_width * Math.cos(arrow_angle + shift)))
     my.ctx.stroke()
 
   ###

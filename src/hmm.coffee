@@ -14,8 +14,10 @@ class HMM
   # main initializer takes data, binding dom, and canvas element as input
   ###
   constructor: (data, bind, cvs) ->
-    @width = 960
-    @height = 500
+
+    @width = cvs.node().width
+    @height = cvs.node().height
+    l(@width)
     @link_dist = 200
     @stroke_style = "#999999"
     @stroke_width = "4"

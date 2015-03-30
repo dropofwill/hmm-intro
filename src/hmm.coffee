@@ -56,11 +56,12 @@ class HMM
       @draw_arc(d, lineWidth: @prob_scale(d.prob))
     @graph.nodes.forEach (d) => @draw_node(d)
 
+  ###
+  # Create the transition probability matrix and add it to the dom
+  ###
   setup_matrix: (matrix_el, nodes, links) ->
-
+    that = this
     matrix = @matrix_data(_.clone(nodes), _.clone(links))
-
-    l(matrix)
 
     tr = matrix_el.selectAll("tr")
       .data(matrix)
@@ -71,7 +72,10 @@ class HMM
       .data(Object)
     .enter()
       .append("td")
-      .text((d) -> d.prob)
+      .each(
+        (d) ->
+          el = d3.select(this)
+          that.build_cell(d, el))
 
   ###
   # sort by source to get the rows right
@@ -91,7 +95,7 @@ class HMM
                 (cell) -> cell.target.index))
 
     # Header row should have an empty first column
-    padded_nodes = _(nodes).chain().unshift(index: "").value()
+    padded_nodes = _(nodes).chain().unshift({}).value()
 
     # Add header and front row
     matrix = _(sort_matrix).chain()
@@ -102,6 +106,34 @@ class HMM
       .unshift(padded_nodes)
       .value()
 
+  build_cell: (d, el) ->
+    if (d.prob?)
+      el
+        .style("background", (d) =>
+          c = d3.rgb(@color_scale(d.source.index))
+          @rgba(c.r, c.g, c.b, 0.5))
+        .append("input")
+        # .style("background", (d) => @color_scale(d.source.index))
+        .attr(type: "number", min: 0, max: 1, step: 0.1, arrows: true)
+        .attr("value", (d) -> d.prob)
+        # .text((d) -> d.prob)
+    else
+      el
+        .text((d) -> d.index)
+        .style("background", (d) =>
+          if d.index?
+            c = d3.rgb(@color_scale(d.index))
+            @rgba(c.r, c.g, c.b, 0.5))
+
+  ###
+  # Convenience method for rgba with default alpha
+  ###
+  rgba: (r, g, b, a=1) -> "rgba(#{r}, #{g}, #{b}, #{a})"
+
+  ###
+  # Return 0 indexed alphabet, ASCII for a is 97
+  ###
+  num_to_alpha (n) -> String.fromCharCode(97 + n)
 
   update: (data) ->
     ### See http://bit.ly/1Hdyh30 for an explanation ###
@@ -114,14 +146,12 @@ class HMM
       .call(@update_links)
 
   update_nodes: (selection) ->
-    console.log(selection)
     selection.enter()
        .append("custom:node")
        .attr("x", (d) -> d.x)
        .attr("y", (d) -> d.y)
 
   update_links: (selection) ->
-    console.log(selection)
     selection.enter()
        .append("custom:link")
        .attr("source", (d) -> d.source.x)

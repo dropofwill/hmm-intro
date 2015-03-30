@@ -57,31 +57,10 @@ class HMM
     @graph.nodes.forEach (d) => @draw_node(d)
 
   setup_matrix: (matrix_el, nodes, links) ->
-    size = nodes.length
-    num_cols = size + 2
-    num_rows = size + 1
-    padded_nodes = _(nodes).chain().unshift(index: "").value()
 
-    ###
-    # sort by source to get the rows right
-    # chunk by the size
-    # then sort by target to get the columns right
-    ###
-    sort_matrix = _.map(
-                    _.chunk(
-                      _.sortBy(links, (l) -> l.source.index),
-                      size),
-                  (row) ->
-                    _.sortBy(row, (cell) -> cell.target.index))
+    matrix = @matrix_data(_.clone(nodes), _.clone(links))
 
-    # Add header and front row
-    matrix = _(sort_matrix).chain()
-      .map((row) ->
-          _(row).chain()
-            .unshift(_.first(row).source)
-            .value())
-      .unshift(padded_nodes)
-      .value()
+    l(matrix)
 
     tr = matrix_el.selectAll("tr")
       .data(matrix)
@@ -93,6 +72,36 @@ class HMM
     .enter()
       .append("td")
       .text((d) -> d.prob)
+
+  ###
+  # sort by source to get the rows right
+  # chunk by the size
+  # then sort by target to get the columns right
+  # pad the header row
+  # create a first column and add the header row
+  ###
+  matrix_data: (nodes, links) ->
+    size = nodes.length
+
+    sort_matrix - _(links).chain()
+      .sortBy((l) -> l.source.index)
+      .chunk(size)
+      .map((row) ->
+        _.sortBy(row,
+                (cell) -> cell.target.index))
+
+    # Header row should have an empty first column
+    padded_nodes = _(nodes).chain().unshift(index: "").value()
+
+    # Add header and front row
+    matrix = _(sort_matrix).chain()
+      .map((row) ->
+          _(row).chain()
+            .unshift(_.first(row).source)
+            .value())
+      .unshift(padded_nodes)
+      .value()
+
 
   update: (data) ->
     ### See http://bit.ly/1Hdyh30 for an explanation ###

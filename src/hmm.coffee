@@ -5,18 +5,15 @@ if app.hmm?
   l("app.hmm already defined")
   return
 
+###
 # Closure for constructing an HMM model on arbitrary data
+###
 class HMM
 
-  # main initializer takes data and dom element as input
-  constructor: (d, el) ->
-    @force = d3.layout.force()
-    @graph = d
-    @canvas = el
-    @ctx = @canvas.node().getContext("2d")
-    @center = new app.Point(x: @width/2, y: @height/2)
-    l(@ctx)
-
+  ###
+  # main initializer takes data, binding dom, and canvas element as input
+  ###
+  constructor: (data, bind, cvs) ->
     @width = 960
     @height = 500
     @link_dist = 200
@@ -25,6 +22,17 @@ class HMM
     @fill_style = "#darkslategray"
     @node_radius = 20
     @square_width = 20
+
+    @force = d3.layout.force()
+    @graph = data
+    @bind = bind
+    @canvas = cvs
+    @ctx = @canvas.node().getContext("2d")
+    @center = new app.Point(x: @width/2, y: @height/2)
+    @prob_scale = d3.scale.linear().domain([0.0, 1.0]).range([0.0, 10.0])
+    @color_scale = d3.scale.category10()
+
+    @update(@graph)
 
     @force
       .nodes(@graph.nodes)
@@ -35,35 +43,73 @@ class HMM
       .on("tick", @tick)
       .start()
 
+  ###
+  # The main drawing loop that animates the nodes and links
+  ###
   tick: () =>
     @ctx.clearRect(0, 0, @width, @height)
     @ctx.strokeStyle = @stroke_style
     @ctx.lineWidth = @stroke_width
 
     @graph.links.forEach (d) =>
-      src = new app.Point(x: d.source.x, y: d.source.y)
-      trg = new app.Point(x: d.target.x, y: d.target.y)
+      @draw_arc(d, lineWidth: @prob_scale(d.prob))
+    @graph.nodes.forEach (d) => @draw_node(d)
 
-      # Check for edges going to the same node
+
+  update: (data) ->
+    ### See http://bit.ly/1Hdyh30 for an explanation ###
+    bind_nodes = @bind.selectAll("custom\\:node")
+      .data(data.nodes)
+      .call(@update_nodes)
+
+    bind_links = @bind.selectAll("custom\\:links")
+      .data(data.links)
+      .call(@update_links)
+
+  update_nodes: (selection) ->
+    console.log(selection)
+    selection.enter()
+       .append("custom:node")
+       .attr("x", (d) -> d.x)
+       .attr("y", (d) -> d.y)
+
+  update_links: (selection) ->
+    console.log(selection)
+    selection.enter()
+       .append("custom:link")
+       .attr("source", (d) -> d.source.x)
+       .attr("y", (d) -> d.y)
+
+  draw_arc: (d, opts={}) ->
+    @ctx.save()
+    @ctx.strokeStyle = opts.strokeStyle ?= @color_scale(d.source.index)
+    @ctx.globalAlpha = opts.alpha       ?= 0.5
+    @ctx.lineWidth   = opts.lineWidth   ?= 0
+
+    src = new app.Point(x: d.source.x, y: d.source.y)
+    trg = new app.Point(x: d.target.x, y: d.target.y)
+
+    # Check for edges going to the same node
+    if opts.lineWidth isnt 0
       if not trg.equals(src)
         @draw_multinode_arc(src, trg)
       else
         @draw_singlenode_arc(src)
 
-    # draw nodes
-    @ctx.fillStyle = "darkslategray"
-    @ctx.globalAlpha = ".4"
+    @ctx.restore()
+
+  draw_node: (d, opts={}) ->
+    @ctx.save()
+    @ctx.fillStyle   = opts.fillStyle ?= @color_scale(d.index)
+    @ctx.globalAlpha = opts.alpha     ?= 1
     @ctx.beginPath()
+    @ctx.moveTo(d.x, d.y)
 
-    @graph.nodes.forEach (d) =>
-      @ctx.moveTo(d.x, d.y)
-
-      if not d.hidden
-        @ctx.arc(d.x, d.y, @node_radius, 0, 2 * Math.PI)
-      # else
-      #   @ctx.rect(d.x, d.y, @square_width, @square_width)
+    if not d.hidden
+      @ctx.arc(d.x, d.y, @node_radius, 0, 2 * Math.PI)
 
     @ctx.fill()
+    @ctx.restore()
 
   ###
   # Draw arc between two different nodes, takes two Points and optionally the
@@ -86,32 +132,30 @@ class HMM
     @draw_quad_curve(src, ctrl, trg)
     @draw_quad_arrow(src, ctrl, trg)
 
-    # @ctx.save()
-    # @ctx.globalAlpha = "1"
-    # @ctx.fillStyle = "red"
-    # @ctx.fillRect(ctrl.x, ctrl.y, 7, 7)
-    # @ctx.restore()
-
   draw_singlenode_arc: (src, r=40) ->
     @ctx.beginPath()
     vec = src.sub(@center).normalize().mul(r).add(src)
-    # l(vec)
     @ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
     @ctx.stroke()
 
-  draw_quad_arrow: (src, ctrl, trg) ->
+  draw_quad_arrow: (src, ctrl, trg, opts={}) ->
     arrow_angle = Math.atan2(ctrl.x - trg.x, ctrl.y - trg.y) + Math.PI
     arrow_width = 15
     shift = Math.PI / 6
+    @ctx.save()
+    @ctx.globalAlpha = 1
+    @ctx.lineWidth   = @prob_scale(0.5)
+    @ctx.strokeStyle = if opts.strokeStyle? then opts.strokeStyle else "#777"
 
     @ctx.beginPath()
-    ### Math from here: http://stackoverflow.com/questions/27778951/drawing-an-arrow-on-an-html5-canvas-quadratic-curve ###
+    ### Math from here: http://bit.ly/1IIDTDa ###
     @ctx.moveTo(trg.x - (arrow_width * Math.sin(arrow_angle - shift)),
-                  trg.y - (arrow_width * Math.cos(arrow_angle - shift)))
+                trg.y - (arrow_width * Math.cos(arrow_angle - shift)))
     @ctx.lineTo(trg.x, trg.y)
     @ctx.lineTo(trg.x - (arrow_width * Math.sin(arrow_angle + shift)),
-                  trg.y - (arrow_width * Math.cos(arrow_angle + shift)))
+                trg.y - (arrow_width * Math.cos(arrow_angle + shift)))
     @ctx.stroke()
+    @ctx.restore()
 
   ###
   # Abstraction around quadraticCurveTo using our Point object

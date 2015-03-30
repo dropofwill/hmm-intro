@@ -11,5 +11,8 @@ window.onload = () ->
         .attr("width", 600)
         .attr("height", 600)
 
+    matrix_el = d3.select("#js-mm-matrix-1")
+      .append("table")
+
     l('main', app)
-    app.example = new app.HMM(data, canvas)
+    app.example = new app.HMM(data, canvas, matrix_el)

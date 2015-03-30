@@ -13,11 +13,10 @@ class HMM
   ###
   # main initializer takes data, binding dom, and canvas element as input
   ###
-  constructor: (data, cvs) ->
+  constructor: (data, cvs, matrix) ->
 
     @width = cvs.node().width
     @height = cvs.node().height
-    l(@width)
     @link_dist = 200
     @stroke_style = "#999999"
     @stroke_width = "4"
@@ -28,6 +27,7 @@ class HMM
     @force = d3.layout.force()
     @graph = data
     @canvas = cvs
+    @matrix_el = matrix
     @ctx = @canvas.node().getContext("2d")
     @center = new app.Point(x: @width/2, y: @height/2)
     @prob_scale = d3.scale.linear().domain([0.0, 1.0]).range([0.0, 10.0])
@@ -42,6 +42,8 @@ class HMM
       .on("tick", @tick)
       .start()
 
+    @setup_matrix(@matrix_el, @force.nodes(), @force.links())
+
   ###
   # The main drawing loop that animates the nodes and links
   ###
@@ -54,6 +56,43 @@ class HMM
       @draw_arc(d, lineWidth: @prob_scale(d.prob))
     @graph.nodes.forEach (d) => @draw_node(d)
 
+  setup_matrix: (matrix_el, nodes, links) ->
+    size = nodes.length
+    num_cols = size + 2
+    num_rows = size + 1
+    padded_nodes = _(nodes).chain().unshift(index: "").value()
+
+    ###
+    # sort by source to get the rows right
+    # chunk by the size
+    # then sort by target to get the columns right
+    ###
+    sort_matrix = _.map(
+                    _.chunk(
+                      _.sortBy(links, (l) -> l.source.index),
+                      size),
+                  (row) ->
+                    _.sortBy(row, (cell) -> cell.target.index))
+
+    # Add header and front row
+    matrix = _(sort_matrix).chain()
+      .map((row) ->
+          _(row).chain()
+            .unshift(_.first(row).source)
+            .value())
+      .unshift(padded_nodes)
+      .value()
+
+    tr = matrix_el.selectAll("tr")
+      .data(matrix)
+    .enter()
+      .append("tr")
+
+    td = tr.selectAll("td")
+      .data(Object)
+    .enter()
+      .append("td")
+      .text((d) -> d.prob)
 
   update: (data) ->
     ### See http://bit.ly/1Hdyh30 for an explanation ###

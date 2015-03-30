@@ -27,9 +27,22 @@ canvas {
   margin-left: auto;
   margin-right: auto;
   display: block;
+}
+
+.mm {
+  position: relative;
+  width: 100%;
+}
+
+.mm-container {
   float: left;
   width: 66%;
   height: 100%;
+}
+
+.mm-matrix {
+ float: left;
+ width: 33%;
 }
 
 .MathJax_Display {

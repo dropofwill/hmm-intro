@@ -113,13 +113,11 @@ class HMM
           c = d3.rgb(@color_scale(d.source.index))
           @rgba(c.r, c.g, c.b, 0.5))
         .append("input")
-        # .style("background", (d) => @color_scale(d.source.index))
         .attr(type: "number", min: 0, max: 1, step: 0.1, arrows: true)
         .attr("value", (d) -> d.prob)
-        # .text((d) -> d.prob)
     else
       el
-        .text((d) -> d.index)
+        .text((d) => @num_to_alpha(d.index))
         .style("background", (d) =>
           if d.index?
             c = d3.rgb(@color_scale(d.index))
@@ -133,7 +131,7 @@ class HMM
   ###
   # Return 0 indexed alphabet, ASCII for a is 97
   ###
-  num_to_alpha (n) -> String.fromCharCode(97 + n)
+  num_to_alpha: (n) -> String.fromCharCode(97 + n)
 
   update: (data) ->
     ### See http://bit.ly/1Hdyh30 for an explanation ###
@@ -186,6 +184,13 @@ class HMM
       @ctx.arc(d.x, d.y, @node_radius, 0, 2 * Math.PI)
 
     @ctx.fill()
+    @ctx.restore()
+
+  draw_text: (text, x, y, opts={}) ->
+    @ctx.save()
+    @ctx.fillStyle = opts.fillStyle ?= "#FFF"
+    @ctx.font      = opts.font      ?= "Merriweather Sans"
+    @ctx.fillText(text, x, y)
     @ctx.restore()
 
   ###

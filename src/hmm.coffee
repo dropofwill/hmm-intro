@@ -83,7 +83,7 @@ class HMM
   matrix_data: (nodes, links) ->
     size = nodes.length
 
-    sort_matrix - _(links).chain()
+    sort_matrix = _(links).chain()
       .sortBy((l) -> l.source.index)
       .chunk(size)
       .map((row) ->

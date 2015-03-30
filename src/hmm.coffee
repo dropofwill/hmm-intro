@@ -13,7 +13,7 @@ class HMM
   ###
   # main initializer takes data, binding dom, and canvas element as input
   ###
-  constructor: (data, bind, cvs) ->
+  constructor: (data, cvs) ->
 
     @width = cvs.node().width
     @height = cvs.node().height
@@ -27,14 +27,11 @@ class HMM
 
     @force = d3.layout.force()
     @graph = data
-    @bind = bind
     @canvas = cvs
     @ctx = @canvas.node().getContext("2d")
     @center = new app.Point(x: @width/2, y: @height/2)
     @prob_scale = d3.scale.linear().domain([0.0, 1.0]).range([0.0, 10.0])
     @color_scale = d3.scale.category10()
-
-    @update(@graph)
 
     @force
       .nodes(@graph.nodes)

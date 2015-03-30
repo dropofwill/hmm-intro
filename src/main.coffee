@@ -11,8 +11,5 @@ window.onload = () ->
         .attr("width", 600)
         .attr("height", 600)
 
-    bind = d3.select("body")
-      .append("custom:sketch")
-
     l('main', app)
-    app.example = new app.HMM(data, bind, canvas)
+    app.example = new app.HMM(data, canvas)

@@ -15,4 +15,4 @@ window.onload = () ->
       .append("table")
 
     l('main', app)
-    app.example = new app.HMM(data, canvas, matrix_el)
+    app.example = new app.HMM(data, canvas, matrix_el, 1)

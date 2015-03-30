@@ -13,16 +13,13 @@ class HMM
   ###
   # main initializer takes data, binding dom, and canvas element as input
   ###
-  constructor: (data, cvs, matrix) ->
+  constructor: (data, cvs, matrix, unique_id=1) ->
 
     @width = cvs.node().width
     @height = cvs.node().height
+    @uid = unique_id
     @link_dist = 200
-    @stroke_style = "#999999"
-    @stroke_width = "4"
-    @fill_style = "#darkslategray"
     @node_radius = 20
-    @square_width = 20
 
     @force = d3.layout.force()
     @graph = data
@@ -105,13 +102,22 @@ class HMM
       .value()
 
   build_cell: (d, el) ->
+    # Default attrs for number inputs
+    num_attr =
+      class: "js-matrix-input"
+      type: "number"
+      min: 0
+      max: 1
+      step: 0.1
+
     if (d.prob?)
       el
         .style("background", (d) =>
           c = d3.rgb(@color_scale(d.source.index))
-          @rgba(c.r, c.g, c.b, 0.5))
+          @rgba(c.r, c.g, c.b, 0.6))
         .append("input")
-        .attr(type: "number", min: 0, max: 1, step: 0.1, arrows: true)
+        .attr(num_attr)
+        .attr("id", (d) => @set_link_uid(@uid, d.source.index, d.target.index))
         .attr("value", (d) -> d.prob)
     else
       el
@@ -119,7 +125,17 @@ class HMM
         .style("background", (d) =>
           if d.index?
             c = d3.rgb(@color_scale(d.index))
-            @rgba(c.r, c.g, c.b, 0.5))
+            @rgba(c.r, c.g, c.b, 0.6))
+
+  ###
+  # Two getter and setter for serializing link information into an HTML id
+  ###
+  set_link_uid: (uid, src_i, trg_i) ->
+    "js-#{uid}-#{src_i}_#{trg_i}"
+
+  get_link_uid: (uid) ->
+    regex = /js\-(\d+)\-(\d+)_(\d+)/g
+    _.drop(regex.exec(uid), 1)
 
   ###
   # Convenience method for rgba with default alpha

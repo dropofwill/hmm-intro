@@ -49,8 +49,6 @@ class HMM
   ###
   tick: () =>
     @ctx.clearRect(0, 0, @width, @height)
-    @ctx.strokeStyle = @stroke_style
-    @ctx.lineWidth = @stroke_width
 
     @graph.links.forEach (d) =>
       @draw_arc(d, lineWidth: @prob_scale(d.prob))
@@ -133,6 +131,10 @@ class HMM
   ###
   num_to_alpha: (n) -> String.fromCharCode(97 + n)
 
+  ###
+  # Takes a link element and some ctx options
+  # Draws an arc with an arrow
+  ###
   draw_arc: (d, opts={}) ->
     @ctx.save()
     @ctx.strokeStyle = opts.strokeStyle ?= @color_scale(d.source.index)
@@ -151,23 +153,33 @@ class HMM
 
     @ctx.restore()
 
+  ###
+  # Takes a node element, some ctx options, and whether to draw the name
+  # Draws a node with the nodes name
+  ###
   draw_node: (d, opts={}) ->
+    draw_text        = opts.draw_text ?= true
     @ctx.save()
     @ctx.fillStyle   = opts.fillStyle ?= @color_scale(d.index)
     @ctx.globalAlpha = opts.alpha     ?= 1
-    @ctx.beginPath()
-    @ctx.moveTo(d.x, d.y)
 
     if not d.hidden
+      @ctx.beginPath()
+      @ctx.moveTo(d.x, d.y)
       @ctx.arc(d.x, d.y, @node_radius, 0, 2 * Math.PI)
+      @ctx.fill()
 
-    @ctx.fill()
+    if not d.hidden and draw_text
+      @draw_text(@num_to_alpha(d.index), d.x, d.y)
+
     @ctx.restore()
 
   draw_text: (text, x, y, opts={}) ->
     @ctx.save()
-    @ctx.fillStyle = opts.fillStyle ?= "#FFF"
-    @ctx.font      = opts.font      ?= "Merriweather Sans"
+    @ctx.fillStyle = opts.fillStyle ?= "#fff"
+    @ctx.font      = opts.font      ?= "16px Merriweather Sans"
+    @ctx.textAlign    = opts.textAlign    ?= "center"
+    @ctx.textBaseline = opts.textBaseline ?= "middle"
     @ctx.fillText(text, x, y)
     @ctx.restore()
 

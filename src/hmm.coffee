@@ -102,6 +102,7 @@ class HMM
       .value()
 
   build_cell: (d, el) ->
+    self = this
     # Default attrs for number inputs
     num_attr =
       class: "js-matrix-input"
@@ -116,9 +117,16 @@ class HMM
           c = d3.rgb(@color_scale(d.source.index))
           @rgba(c.r, c.g, c.b, 0.6))
         .append("input")
-        .attr(num_attr)
-        .attr("id", (d) => @set_link_uid(@uid, d.source.index, d.target.index))
-        .attr("value", (d) -> d.prob)
+          .attr(num_attr)
+          .attr("id", (d) => @set_link_uid(@uid, d.source.index, d.target.index))
+          .attr("value", (d) -> d.prob)
+          .on("blur", (d, i) ->
+            if v isnt 0
+              v = +@value
+              dv = -v/@size
+              l(v, dv, self.get_link_uid(@id))
+              d.prob = v
+              self.tick())
     else
       el
         .text((d) => @num_to_alpha(d.index))
@@ -135,7 +143,11 @@ class HMM
 
   get_link_uid: (uid) ->
     regex = /js\-(\d+)\-(\d+)_(\d+)/g
-    _.drop(regex.exec(uid), 1)
+    arr = _.drop(regex.exec(uid), 1)
+
+    uid: arr[0]
+    src: arr[1]
+    trg: arr[2]
 
   ###
   # Convenience method for rgba with default alpha

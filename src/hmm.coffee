@@ -133,28 +133,6 @@ class HMM
   ###
   num_to_alpha: (n) -> String.fromCharCode(97 + n)
 
-  update: (data) ->
-    ### See http://bit.ly/1Hdyh30 for an explanation ###
-    bind_nodes = @bind.selectAll("custom\\:node")
-      .data(data.nodes)
-      .call(@update_nodes)
-
-    bind_links = @bind.selectAll("custom\\:links")
-      .data(data.links)
-      .call(@update_links)
-
-  update_nodes: (selection) ->
-    selection.enter()
-       .append("custom:node")
-       .attr("x", (d) -> d.x)
-       .attr("y", (d) -> d.y)
-
-  update_links: (selection) ->
-    selection.enter()
-       .append("custom:link")
-       .attr("source", (d) -> d.source.x)
-       .attr("y", (d) -> d.y)
-
   draw_arc: (d, opts={}) ->
     @ctx.save()
     @ctx.strokeStyle = opts.strokeStyle ?= @color_scale(d.source.index)

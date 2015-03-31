@@ -16,6 +16,7 @@ app = window.configApp()
 class Point
   constructor: (opts) ->
     if opts.x? and opts.y?
+      l(this) if opts.debug_scope
       {@x, @y} = opts
       {@mag, @theta} = @get_polar(opts)
     else if opts.mag? and opts.theta?

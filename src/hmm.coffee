@@ -11,10 +11,13 @@ if app.hmm?
 class HMM
 
   ###
-  # main initializer takes data, binding dom, and canvas element as input
+  # The main initializer takes data, binding dom, and canvas element as input
+  # D3 manipulates the state of this on callbacks to the DOM element,
+  # This makes some of the way 'this' is handled confusing
   ###
   constructor: (data, cvs, matrix, unique_id=1) ->
 
+    self = this
     @width = cvs.node().width
     @height = cvs.node().height
     @uid = unique_id
@@ -40,6 +43,19 @@ class HMM
       .on("tick", @tick)
       .start()
 
+    @canvas.on("mousemove", () ->
+      m = d3.mouse(this)
+      m = new app.Point(x: m[0], y: m[1])
+      ###
+      # Little bit of a dangerous optimization here
+      # nodes are *not* points, but since they respond to #x/#y and that's all
+      # we need for #get_dist this will work in this particular case
+      ###
+      self.force.nodes().forEach((n) ->
+        l(self.pt_circle_collide(m, n))
+      )
+    )
+
     @setup_matrix(@matrix_el, @force.nodes(), @force.links())
 
   ###
@@ -51,6 +67,19 @@ class HMM
     @graph.links.forEach (d) =>
       @draw_arc(d, lineWidth: @prob_scale(d.prob))
     @graph.nodes.forEach (d) => @draw_node(d)
+
+  ###
+  # Math for animating along a quadratic curve from http://bit.ly/1GHKvTe
+  ###
+
+  ###
+  #
+  ###
+  pt_circle_collide: (pt, circle_pt, radius=@node_radius) ->
+    if pt.get_dist(circle_pt) < radius
+      true
+    else
+      false
 
   ###
   # Create the transition probability matrix and add it to the dom
@@ -87,8 +116,7 @@ class HMM
       .sortBy((l) -> l.source.index)
       .chunk(@size)
       .map((row) ->
-        _.sortBy(row,
-                (cell) -> cell.target.index))
+        _.sortBy(row, (cell) -> cell.target.index))
 
     # Header row should have an empty first column
     padded_nodes = _(nodes).chain().unshift({}).value()
@@ -102,12 +130,18 @@ class HMM
       .unshift(padded_nodes)
       .value()
 
+  ###
+  # Logic for determining which cell type to build
+  ###
   build_cell: (d, el) ->
     if (d.prob?)
       @build_inputs(d, el)
     else
       @build_headers(d, el)
 
+  ###
+  # Create the td's that require inputs for displaying the individual probs
+  ###
   build_inputs: (d, el) ->
     # Default attrs for number inputs
     num_attr = {class:"js-matrix-input", type:"number", min:0, max:1, step:0.1}
@@ -133,13 +167,13 @@ class HMM
               .selectAll("td > input")
               .filter((d) -> el isnt this)
               .each((d) -> row_prob.push(d))
-
-            self.balance_prob(row_prob, v)
-
-            cells
+              .call((d) -> self.balance_prob(row_prob, v))
               .each((d) -> this.value = d.prob)
             self.tick())
 
+  ###
+  # Create the td's that mark the row and columns
+  ###
   build_headers: (d, el) ->
     el.text((d) => @num_to_alpha(d.index))
       .style("background", (d) =>
@@ -277,12 +311,18 @@ class HMM
     @draw_quad_curve(src, ctrl, trg)
     @draw_quad_arrow(src, ctrl, trg)
 
+  ###
+  # Draw an arc to the same node
+  ###
   draw_singlenode_arc: (src, r=40) ->
     @ctx.beginPath()
     vec = src.sub(@center).normalize().mul(r).add(src)
     @ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
     @ctx.stroke()
 
+  ###
+  # Draw a simple arrow along a quadratic curved path
+  ###
   draw_quad_arrow: (src, ctrl, trg, opts={}) ->
     arrow_angle = Math.atan2(ctrl.x - trg.x, ctrl.y - trg.y) + Math.PI
     arrow_width = 15

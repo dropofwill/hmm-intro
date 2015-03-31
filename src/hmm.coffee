@@ -103,49 +103,49 @@ class HMM
       .value()
 
   build_cell: (d, el) ->
+    if (d.prob?)
+      @build_inputs(d, el)
+    else
+      @build_headers(d, el)
+
+  build_inputs: (d, el) ->
+    # Default attrs for number inputs
+    num_attr = {class:"js-matrix-input", type:"number", min:0, max:1, step:0.1}
     self = this
 
-    # Default attrs for number inputs
-    num_attr =
-      class: "js-matrix-input"
-      type: "number"
-      min: 0
-      max: 1
-      step: 0.1
+    el.style("background", (d) =>
+        c = d3.rgb(@color_scale(d.source.index))
+        @rgba(c.r, c.g, c.b, 0.6))
+      .append("input")
+        .attr(num_attr)
+        .attr("id", (d) => @set_link_uid(@uid, d.source.index, d.target.index))
+        .attr("value", (d) -> d.prob)
+        .on("blur", (d, i) ->
+          if v isnt 0
+            el = this
+            v = +el.value
+            d.prob = v
+            row_prob = []
 
-    if (d.prob?)
-      el.style("background", (d) =>
-          c = d3.rgb(@color_scale(d.source.index))
+            # tr > td * size > input, so find all the other inputs in the
+            # row that aren't the changing element
+            cells = d3.select(el.parentElement.parentElement)
+              .selectAll("td > input")
+              .filter((d) -> el isnt this)
+              .each((d) -> row_prob.push(d))
+
+            self.balance_prob(row_prob, v)
+
+            cells
+              .each((d) -> this.value = d.prob)
+            self.tick())
+
+  build_headers: (d, el) ->
+    el.text((d) => @num_to_alpha(d.index))
+      .style("background", (d) =>
+        if d.index?
+          c = d3.rgb(@color_scale(d.index))
           @rgba(c.r, c.g, c.b, 0.6))
-        .append("input")
-          .attr(num_attr)
-          .attr("id", (d) => @set_link_uid(@uid, d.source.index, d.target.index))
-          .attr("value", (d) -> d.prob)
-          .on("blur", (d, i) ->
-            if v isnt 0
-              el = this
-              v = +el.value
-              d.prob = v
-              row_prob = []
-
-              # tr > td * size > input, so find all the other inputs in the
-              # row that aren't the changing element
-              cells = d3.select(el.parentElement.parentElement)
-                .selectAll("td > input")
-                .filter((d) -> el isnt this)
-                .each((d) -> row_prob.push(d))
-
-              self.balance_prob(row_prob, v)
-
-              cells
-                .each((d) -> this.value = d.prob)
-              self.tick())
-    else
-      el.text((d) => @num_to_alpha(d.index))
-        .style("background", (d) =>
-          if d.index?
-            c = d3.rgb(@color_scale(d.index))
-            @rgba(c.r, c.g, c.b, 0.6))
 
   ###
   # Sum the current probabilities and find the difference from 1
@@ -166,7 +166,6 @@ class HMM
       .forEach((d) ->
         count--
         if d.prob > even
-          l(d.prob, even)
           d.prob = d.prob - even
         else
           diff = diff - d.prob

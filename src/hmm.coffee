@@ -124,11 +124,11 @@ class HMM
             if v isnt 0
               el = this
               v = +el.value
-              d.prob = v
               diff = v - d.prob
+              d.prob = v
+              even = diff / (self.size - 1)
               row_prob = []
-              l(diff)
-              l(self.strip(0.3333 + 0.3333 + 0.3333))
+              # l(self.strip(0.3333 + 0.3333 + 0.3333))
 
               # tr > td * size > input, so find all the other inputs in the
               # row that aren't the changing element
@@ -136,17 +136,13 @@ class HMM
                 .selectAll("td > input")
                 .each((d) -> row_prob.push(d))
 
+              l(self.balance_prob(row_prob, diff, even))
+
               cells
                 .filter((d) -> el isnt this)
                 .each((d) ->
-                  if d.prob > diff
-                    d.prob = d.prob - diff
-                  else
-                    d.prob = 0
-                    diff = diff - d.prob
                   l(this, d.prob)
                   this.value = d.prob)
-              l(row_prob)
               self.tick())
     else
       el.text((d) => @num_to_alpha(d.index))
@@ -154,6 +150,21 @@ class HMM
           if d.index?
             c = d3.rgb(@color_scale(d.index))
             @rgba(c.r, c.g, c.b, 0.6))
+
+  balance_prob: (row_prob, diff, even) ->
+    l(diff, even)
+    _(row_prob).chain()
+      .sortBy((d) -> d.prob)
+      .forEach((d) ->
+        if d.prob > even
+          l(d.prob, even)
+          d.prob = d.prob - even
+        else
+          l("weird")
+          d.prob = 0
+          even = even - d.prob)
+       .sortBy((d) -> d.target.index)
+       .value()
 
   ###
   # getter and setter for serializing link information into an HTML id

@@ -16,26 +16,33 @@ class HMM
   # This makes some of the way 'this' is handled confusing
   ###
   constructor: (data, cvs, matrix, unique_id=1) ->
-
     self = this
+
+    @graph = data
+    @size = @graph.nodes.length
+    @canvas = cvs
+    @ctx = @canvas.node().getContext("2d")
+    @uid = unique_id
+
     @width = cvs.node().width
     @height = cvs.node().height
-    @uid = unique_id
+
     @link_dist = 200
     @node_radius = 20
 
     @force = d3.layout.force()
     @drag = d3.behavior.drag()
-    @drag_node = undefined
-    @graph = data
-    @canvas = cvs
-    @matrix_el = matrix
-    @ctx = @canvas.node().getContext("2d")
-    @center = new app.Point(x: @width/2, y: @height/2)
     @prob_scale = d3.scale.linear().domain([0.0, 1.0]).range([0.0, 10.0])
     @color_scale = d3.scale.category10()
-    @size = @graph.nodes.length
 
+    @drag_node = undefined
+    @matrix_el = matrix
+    @center = new app.Point(x: @width/2, y: @height/2)
+
+    ###
+    # d3's implementation of a force layout handles all of the physics math
+    # but doesn't do anything with the canvas
+    ###
     @force
       .nodes(@graph.nodes)
       .links(@graph.links)

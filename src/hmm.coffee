@@ -25,6 +25,8 @@ class HMM
     @node_radius = 20
 
     @force = d3.layout.force()
+    @drag = d3.behavior.drag()
+    @drag_node = undefined
     @graph = data
     @canvas = cvs
     @matrix_el = matrix
@@ -43,19 +45,40 @@ class HMM
       .on("tick", @tick)
       .start()
 
+    ###
+    # Little bit of a dangerous optimization here
+    # nodes are *not* points, but since they respond to #x/#y and that's all
+    # we need for #get_dist this will work in this particular case
+    ###
     @canvas.on("mousemove", () ->
-      m = d3.mouse(this)
-      m = new app.Point(x: m[0], y: m[1])
-      ###
-      # Little bit of a dangerous optimization here
-      # nodes are *not* points, but since they respond to #x/#y and that's all
-      # we need for #get_dist this will work in this particular case
-      ###
-      self.force.nodes().forEach((n) ->
-        l(self.pt_circle_collide(m, n))
-      )
-    )
+      mouse = d3.mouse(this)
+      mouse = new app.Point(x: mouse[0], y: mouse[1])
+      self.hover_node = undefined
 
+      self.force.nodes().forEach((node) ->
+        colliding = self.pt_circle_collide(mouse, node)
+        if colliding
+          self.hover_node = node
+      )
+    ).call(self.drag)
+
+    ###
+    # Added the ability to aimlessly drag the graph around bc Peter
+    ###
+    @drag.on("dragstart", () -> self.drag_node = self.hover_node)
+
+    @drag.on("drag", () ->
+      if not self.drag_node?
+        return
+      self.drag_node.x = d3.event.x
+      self.drag_node.y = d3.event.y
+      self.force.start())
+
+    @drag.on("dragend", () -> self.drag_node = undefined)
+
+    ###
+    # Build the transition probability matrix based on the data
+    ###
     @setup_matrix(@matrix_el, @force.nodes(), @force.links())
 
   ###
@@ -73,7 +96,7 @@ class HMM
   ###
 
   ###
-  #
+  # Collision detection for two points, the second of which has a default radius
   ###
   pt_circle_collide: (pt, circle_pt, radius=@node_radius) ->
     if pt.get_dist(circle_pt) < radius

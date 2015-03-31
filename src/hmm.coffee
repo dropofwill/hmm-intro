@@ -104,6 +104,7 @@ class HMM
 
   build_cell: (d, el) ->
     self = this
+
     # Default attrs for number inputs
     num_attr =
       class: "js-matrix-input"
@@ -124,25 +125,20 @@ class HMM
             if v isnt 0
               el = this
               v = +el.value
-              diff = v - d.prob
               d.prob = v
-              even = diff / (self.size - 1)
               row_prob = []
-              # l(self.strip(0.3333 + 0.3333 + 0.3333))
 
               # tr > td * size > input, so find all the other inputs in the
               # row that aren't the changing element
               cells = d3.select(el.parentElement.parentElement)
                 .selectAll("td > input")
+                .filter((d) -> el isnt this)
                 .each((d) -> row_prob.push(d))
 
-              l(self.balance_prob(row_prob, diff, even))
+              self.balance_prob(row_prob, v)
 
               cells
-                .filter((d) -> el isnt this)
-                .each((d) ->
-                  l(this, d.prob)
-                  this.value = d.prob)
+                .each((d) -> this.value = d.prob)
               self.tick())
     else
       el.text((d) => @num_to_alpha(d.index))
@@ -151,18 +147,32 @@ class HMM
             c = d3.rgb(@color_scale(d.index))
             @rgba(c.r, c.g, c.b, 0.6))
 
-  balance_prob: (row_prob, diff, even) ->
-    l(diff, even)
+  ###
+  # Sum the current probabilities and find the difference from 1
+  # Find the what needs to subtracted to the other probs to equal 1
+  # Sort from smallest to largest probability
+  # Check if each individual is large enough to just subtract directly
+  # If not set it to 0, and reset the even for the rest of them
+  # Not fully tested, may be a bit brittle still
+  ###
+  balance_prob: (row_prob, val) =>
+    sum = _.reduce(row_prob, ((sum, d) -> sum + d.prob), val)
+    diff = sum - 1
+    count = @size - 1
+    even = diff / (@size - 1)
+
     _(row_prob).chain()
       .sortBy((d) -> d.prob)
       .forEach((d) ->
+        count--
         if d.prob > even
           l(d.prob, even)
           d.prob = d.prob - even
         else
-          l("weird")
+          diff = diff - d.prob
+          even = diff / count
           d.prob = 0
-          even = even - d.prob)
+        )
        .sortBy((d) -> d.target.index)
        .value()
 

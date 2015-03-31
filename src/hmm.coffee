@@ -29,6 +29,7 @@ class HMM
     @center = new app.Point(x: @width/2, y: @height/2)
     @prob_scale = d3.scale.linear().domain([0.0, 1.0]).range([0.0, 10.0])
     @color_scale = d3.scale.category10()
+    @size = @graph.nodes.length
 
     @force
       .nodes(@graph.nodes)
@@ -80,11 +81,11 @@ class HMM
   # create a first column and add the header row
   ###
   matrix_data: (nodes, links) ->
-    size = nodes.length
+    @size = nodes.length
 
     sort_matrix = _(links).chain()
       .sortBy((l) -> l.source.index)
-      .chunk(size)
+      .chunk(@size)
       .map((row) ->
         _.sortBy(row,
                 (cell) -> cell.target.index))
@@ -112,8 +113,7 @@ class HMM
       step: 0.1
 
     if (d.prob?)
-      el
-        .style("background", (d) =>
+      el.style("background", (d) =>
           c = d3.rgb(@color_scale(d.source.index))
           @rgba(c.r, c.g, c.b, 0.6))
         .append("input")
@@ -122,21 +122,41 @@ class HMM
           .attr("value", (d) -> d.prob)
           .on("blur", (d, i) ->
             if v isnt 0
-              v = +@value
-              dv = -v/@size
-              l(v, dv, self.get_link_uid(@id))
+              el = this
+              v = +el.value
               d.prob = v
+              diff = v - d.prob
+              row_prob = []
+              l(diff)
+              l(self.strip(0.3333 + 0.3333 + 0.3333))
+
+              # tr > td * size > input, so find all the other inputs in the
+              # row that aren't the changing element
+              cells = d3.select(el.parentElement.parentElement)
+                .selectAll("td > input")
+                .each((d) -> row_prob.push(d))
+
+              cells
+                .filter((d) -> el isnt this)
+                .each((d) ->
+                  if d.prob > diff
+                    d.prob = d.prob - diff
+                  else
+                    d.prob = 0
+                    diff = diff - d.prob
+                  l(this, d.prob)
+                  this.value = d.prob)
+              l(row_prob)
               self.tick())
     else
-      el
-        .text((d) => @num_to_alpha(d.index))
+      el.text((d) => @num_to_alpha(d.index))
         .style("background", (d) =>
           if d.index?
             c = d3.rgb(@color_scale(d.index))
             @rgba(c.r, c.g, c.b, 0.6))
 
   ###
-  # Two getter and setter for serializing link information into an HTML id
+  # getter and setter for serializing link information into an HTML id
   ###
   set_link_uid: (uid, src_i, trg_i) ->
     "js-#{uid}-#{src_i}_#{trg_i}"
@@ -148,6 +168,11 @@ class HMM
     uid: arr[0]
     src: arr[1]
     trg: arr[2]
+
+  ###
+  # Deal with floating point rounding errors loosely
+  ###
+  strip: (number) -> parseFloat(number.toPrecision(12))
 
   ###
   # Convenience method for rgba with default alpha

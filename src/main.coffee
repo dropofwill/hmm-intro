@@ -4,7 +4,7 @@ app.example = undefined
 # Register the "custom" namespace prefix for our custom elements.
 
 window.onload = () ->
-  d3.json "lib/data.json", (data) ->
+  d3.json "lib/data4.json", (data) ->
     dim = 500
     canvas = d3.select("#js-mm-1")
       .append("canvas")

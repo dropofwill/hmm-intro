@@ -52,6 +52,10 @@ input[type="number"] {
   color: #fff;
 }
 
+.mm caption {
+  padding: 10px;
+}
+
 .mm td, th {
   /* border-bottom: 1px solid #CCC; */
   /* border-top: 1px solid #CCC; */
@@ -60,13 +64,17 @@ input[type="number"] {
   text-align: center;
 }
 
+.mm tr:first-child td {
+  height: 20px;
+}
+
 .mm th {
   /* background: #F3F3F3; /1* Light grey background *1/ */
   font-weight: bold; /* Make sure they're bold */
 }
 
 .mm td {
-  padding: 10px;
+  padding: 10px 5px;
 }
 
 .mm-container {

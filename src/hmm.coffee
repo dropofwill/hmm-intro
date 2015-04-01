@@ -40,10 +40,14 @@ class HMM
     @setup_matrix(@matrix_el, @force.nodes(), @force.links())
 
     @drag_node = undefined
+    @transitioning = false
+    @transition_percent = 0
     @current_node = @select_initial_node()
-    @state_loop()
+    @current_link
+    @current_point #= new app.Point(x: @current_node.x, y: @current_node.y)
 
-    l(@get_links_from(@current_node.index))
+    # l(@get_links_from(@current_node.index))
+    # @select_next_node()
 
   ###
   # d3's implementation of a force layout handles all of the physics math
@@ -54,7 +58,7 @@ class HMM
       .nodes(@graph.nodes)
       .links(@graph.links)
       .size([@width, @height])
-      .alpha(0.001)
+      .alpha(0.01)
       .linkDistance(@link_dist)
       .on("tick", @tick)
       .start()
@@ -101,28 +105,47 @@ class HMM
   tick: () =>
     @ctx.clearRect(0, 0, @width, @height)
 
-    @graph.links.forEach (d) =>
-      @draw_arc(d, lineWidth: @prob_scale(d.prob))
+    @graph.links.forEach (d) => @draw_arc(d, lineWidth: @prob_scale(d.prob))
     @graph.nodes.forEach (d) => @draw_node(d)
+    @draw_state()
 
-  state_loop: () ->
-    l("yolo")
-    if @current_node?
-      @draw_node(@current_node, radius: 35, alpha: 0.35)
+  draw_state: () ->
+    if @transitioning
+      @transition_percent += 1
+      l(@current_link)
+      tmp_pt = @quad_xy_at_percent(@current_link.source,
+                                    @current_link.ctrl,
+                                    @current_link.target,
+                                    @transition_percent)
+
+      @draw_node(tmp_pt, radius: 30, alpha: 0.35, fillStyle: "gray")
+      @force.resume()
+
+      if @transition_percent >= 100
+        @transitioning = false
+    else
+      @draw_node(@current_node, radius: 30, alpha: 0.35, fillStyle: "gray")
+      @force.resume()
 
   ###
   # Math for animating along a quadratic curve from http://bit.ly/1GHKvTe
   # See also: http://en.wikipedia.org/wiki/De_Casteljau's_algorithm
+  # Takes the three points that define the curve, and a percent along it
+  # either between 0 and 100
   ###
-  quad_xy_at_percent: (src, ctrl, trg, per) ->
-    rev_per = 1-per
-    x = Math.pow(rev_per, 2) * src.x  +
-        2 * rev_per * per    * ctrl.x +
-        Math.pow(per, 2)     * trg.x
-    y = Math.pow(rev_per, 2) * src.y  +
-        2 * rev_per * per    * ctrl.y +
-        Math.pow(per, 2)     * trg.y
-    return new Point(x: x, y: y)
+  quad_xy_at_percent: (src, ctrl, trg, percent) ->
+    per = percent / 100
+
+    x = Math.pow(1-per, 2) * src.x  +
+        2 * 1-per * per    * ctrl.x +
+        Math.pow(per, 2)   * trg.x
+    y = Math.pow(1-per, 2) * src.y  +
+        2 * 1-per * per    * ctrl.y +
+        Math.pow(per, 2)   * trg.y
+    return new app.Point(x: x, y: y)
+
+  circle_xy_at_percent: (src, rad, per) ->
+
 
   ###
   # Randomly select a node to start with using an even distribution
@@ -132,6 +155,12 @@ class HMM
     p = 1/@size
     @graph.nodes.forEach((n) -> n.prob = p)
     @prob_random(@graph.nodes)
+
+  select_next_node: () ->
+    links = @get_links_from(@current_node.index)
+    @transitioning = true
+    @current_link = @prob_random(links)
+    @current_node = @current_link.target
 
   ###
   # Takes a list of objects that respond to the prob_key with a float between
@@ -343,7 +372,7 @@ class HMM
     # Check for edges going to the same node
     if opts.lineWidth isnt 0
       if not trg.equals(src)
-        @draw_multinode_arc(src, trg)
+        d.ctrl = @draw_multinode_arc(src, trg)
       else
         @draw_singlenode_arc(src)
 
@@ -360,14 +389,12 @@ class HMM
     @ctx.globalAlpha = opts.alpha     ?= 1
     radius           = opts.radius    ?= @node_radius
 
-    if not d.hidden
-      @ctx.beginPath()
-      @ctx.moveTo(d.x, d.y)
-      @ctx.arc(d.x, d.y, radius, 0, 2 * Math.PI)
-      @ctx.fill()
+    @ctx.beginPath()
+    @ctx.moveTo(d.x, d.y)
+    @ctx.arc(d.x, d.y, radius, 0, 2 * Math.PI)
+    @ctx.fill()
 
-    if not d.hidden and draw_text
-      @draw_text(@num_to_alpha(d.index), d.x, d.y)
+    @draw_text(@num_to_alpha(d.index), d.x, d.y) if draw_text
 
     @ctx.restore()
 
@@ -400,6 +427,7 @@ class HMM
 
     @draw_quad_curve(src, ctrl, trg)
     @draw_quad_arrow(src, ctrl, trg)
+    return ctrl
 
   ###
   # Draw an arc to the same node

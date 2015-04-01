@@ -18,8 +18,6 @@ class HMM
   constructor: (data, cvs, matrix, unique_id=1) ->
     self = this
 
-    l(@prob_random([{prob: 0.27}, {prob: 0.24}, {prob: 0.23}, {prob: 0.26}]))
-
     @graph = data
     @size = @graph.nodes.length
     @canvas = cvs
@@ -41,10 +39,20 @@ class HMM
     @matrix_el = matrix
     @center = new app.Point(x: @width/2, y: @height/2)
 
-    ###
-    # d3's implementation of a force layout handles all of the physics math
-    # but doesn't do anything with the canvas
-    ###
+    console.log(self)
+    @setup_force()
+    @setup_mouse()
+    @setup_drag()
+    @setup_matrix(@matrix_el, @force.nodes(), @force.links())
+
+    @select_initial_node()
+    l(@prob_random([{prob: 0.27}, {prob: 0.24}, {prob: 0.23}, {prob: 0.26}]))
+
+  ###
+  # d3's implementation of a force layout handles all of the physics math
+  # but doesn't do anything with the canvas
+  ###
+  setup_force: () =>
     @force
       .nodes(@graph.nodes)
       .links(@graph.links)
@@ -54,11 +62,13 @@ class HMM
       .on("tick", @tick)
       .start()
 
-    ###
-    # Little bit of a dangerous optimization here
-    # nodes are *not* points, but since they respond to #x/#y and that's all
-    # we need for #get_dist this works in this case & saves on memory
-    ###
+  ###
+  # Little bit of a dangerous optimization here
+  # nodes are *not* points, but since they respond to #x/#y and that's all
+  # we need for #get_dist this works in this case & saves on memory
+  ###
+  setup_mouse: () =>
+    self = this
     @canvas.on("mousemove", () ->
       mouse = d3.mouse(this)
       mouse = new app.Point(x: mouse[0], y: mouse[1])
@@ -71,9 +81,11 @@ class HMM
       )
     ).call(self.drag)
 
-    ###
-    # Added the ability to aimlessly drag the graph around bc Peter
-    ###
+  ###
+  # Added the ability to aimlessly drag the graph around bc Peter
+  ###
+  setup_drag: () =>
+    self = this
     @drag.on("dragstart", () -> self.drag_node = self.hover_node)
 
     @drag.on("drag", () ->
@@ -85,10 +97,6 @@ class HMM
 
     @drag.on("dragend", () -> self.drag_node = undefined)
 
-    ###
-    # Build the transition probability matrix based on the data
-    ###
-    @setup_matrix(@matrix_el, @force.nodes(), @force.links())
 
   ###
   # The main drawing loop that animates the nodes and links
@@ -114,6 +122,9 @@ class HMM
     return new Point(x: x, y: y)
 
   select_initial_node: () ->
+    p = 1/@size
+    @graph.nodes.forEach((n) -> n.prob = p)
+    @prob_random(@graph.nodes)
 
   ###
   # Takes a list of objects that respond to the prob_key with a float between

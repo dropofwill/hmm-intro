@@ -14,5 +14,4 @@ window.onload = () ->
     matrix_el = d3.select("#js-mm-matrix-1")
       .append("table")
 
-    l('main', app)
     app.example = new app.HMM(data, canvas, matrix_el, 1)

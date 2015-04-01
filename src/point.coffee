@@ -124,16 +124,5 @@ class Point
   get_dist: (cart) ->
     Math.sqrt(Math.pow(@x - cart.x, 2)+ Math.pow(@y - cart.y, 2))
 
-
-p1 = new Point(x: 1, y: 2)
-p2 = new Point(mag: 10, theta: Math.PI/2)
-l(p2)
-l(p2.normalize())
-# l(p1.add(p2))
-# l(p1.sub(p2))
-# l(p2.add(p2))
-# l(p1.mul(10))
-# l(p1.div(10))
-
 ### Attach Point object to the app object ###
 app.Point = Point

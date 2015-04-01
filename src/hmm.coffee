@@ -173,21 +173,23 @@ class HMM
   matrix_data: (nodes, links) ->
     @size = nodes.length
 
-    sort_matrix = _(links).chain()
-      .sortBy((l) -> l.source.index)
-      .chunk(@size)
-      .map((row) ->
-        _.sortBy(row, (cell) -> cell.target.index))
-
     # Header row should have an empty first column
     padded_nodes = _(nodes).chain().unshift({}).value()
 
-    # Add header and front row
-    matrix = _(sort_matrix).chain()
+    sort_matrix = _(links).chain()
+      # sort by source
+      .sortBy((l) -> l.source.index)
+      # convert the array into a nxn matrix
+      .chunk(@size)
+      # sort by target
+      .map((row) ->
+        _.sortBy(row, (cell) -> cell.target.index))
+      # Add front column
       .map((row) ->
           _(row).chain()
             .unshift(_.first(row).source)
             .value())
+      # Add header
       .unshift(padded_nodes)
       .value()
 

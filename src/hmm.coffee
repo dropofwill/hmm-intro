@@ -18,6 +18,8 @@ class HMM
   constructor: (data, cvs, matrix, unique_id=1) ->
     self = this
 
+    l(@prob_random([{prob: 0.27}, {prob: 0.24}, {prob: 0.23}, {prob: 0.26}]))
+
     @graph = data
     @size = @graph.nodes.length
     @canvas = cvs
@@ -55,7 +57,7 @@ class HMM
     ###
     # Little bit of a dangerous optimization here
     # nodes are *not* points, but since they respond to #x/#y and that's all
-    # we need for #get_dist this will work in this particular case
+    # we need for #get_dist this works in this case & saves on memory
     ###
     @canvas.on("mousemove", () ->
       mouse = d3.mouse(this)
@@ -101,6 +103,35 @@ class HMM
   ###
   # Math for animating along a quadratic curve from http://bit.ly/1GHKvTe
   ###
+  quad_xy_at_percent: (src, ctrl, trg, per) ->
+    rev_per = 1-per
+    x = Math.pow(rev_per, 2) * src.x  +
+        2 * rev_per * per    * ctrl.x +
+        Math.pow(per, 2)     * trg.x
+    y = Math.pow(rev_per, 2) * src.y  +
+        2 * rev_per * per    * ctrl.y +
+        Math.pow(per, 2)     * trg.y
+    return new Point(x: x, y: y)
+
+  select_initial_node: () ->
+
+  ###
+  # Takes a list of objects that respond to the prob_key with a float between
+  # 0 and 1. Expects that these all sum to 1.
+  # Returns a random object based on its distribution
+  ###
+  prob_random: (nodes, prob_key="prob") ->
+    rand = Math.random()
+    s = 0
+    last = nodes[nodes.length - 1]
+
+    nodes.some((n) ->
+      s += n[prob_key]
+      if rand < s
+        last = n
+        return true)
+
+    return last
 
   ###
   # Collision detection for two points, the second of which has a default radius

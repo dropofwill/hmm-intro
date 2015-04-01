@@ -49,6 +49,14 @@ input[type="number"] {
   padding-right: 0;
 }
 
+.mm-ui {
+  font-size: 12px;
+}
+
+.mm-ui div {
+  margin-bottom: 10px;
+}
+
 .mm table {
   /* width: 640px; */
   /* border-collapse: */

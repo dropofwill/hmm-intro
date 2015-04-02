@@ -114,13 +114,17 @@ class HMM
       @transition_percent += 1
 
       if @current_link.ctrl?
+        @transition_percent += 1
         tmp_pt = @quad_xy_at_percent(@current_link.source, @current_link.ctrl,
                                      @current_link.target, @transition_percent)
       else
-        src = @singlenode_arc_origin(@current_link.source)
-        start_angle = src.sub(@current_node).theta
-        l(start_angle * 180/Math.PI)
-        tmp_pt = @circle_xy_at_percent(src, 40, @transition_percent, start_angle)
+        @transition_percent -= 0.5
+        arc = @singlenode_arc_origin(@current_link.source)
+        # start_angle = src.sub(@current_node).theta
+        node_coords = new app.Point(x: @current_node.x, y: @current_node.y)
+        start_angle = node_coords.sub(arc).theta
+        # l(start_angle * 180/Math.PI)
+        tmp_pt = @circle_xy_at_percent(arc, 40, @transition_percent, start_angle)
 
       @draw_node(tmp_pt, radius: 30, alpha: 0.35, fillStyle: "gray")
       @force.resume()
@@ -150,10 +154,13 @@ class HMM
     return new app.Point(x: x, y: y)
 
   circle_xy_at_percent: (src, rad, percent, start_angle=0) ->
-    angle = percent / 100 * (360 - start_angle) * (Math.PI / 180)
+    angle = (percent / 100 * (360) * (Math.PI / 180)) + start_angle
     x = src.x + rad * Math.cos(angle)
     y = src.y + rad * Math.sin(angle)
     return new app.Point(x: x, y: y)
+
+  circle_xy_start: (node, arc) ->
+
 
   ###
   # Randomly select a node to start with using an even distribution
@@ -440,11 +447,27 @@ class HMM
   ###
   # Draw an arc to the same node
   ###
-  draw_singlenode_arc: (src, r=40) ->
+  draw_singlenode_arc: (src, r=70) ->
+    pt = new app.Point(x: src.x, y: src.y)
+    pos = pt.sub(@center).normalize()
+    vec = pos.mul(r).add(pt)
+    perp1 = new app.Point(x: pos.y, y: -pos.x).mul(r*1.5).add(vec)
+    perp2 = new app.Point(x: -pos.y, y: pos.x).mul(r*1.5).add(vec)
+
+    @ctx.fillStyle = "black"
     @ctx.beginPath()
-    vec = @singlenode_arc_origin(src, r)
-    @ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
-    @ctx.stroke()
+    @ctx.arc(vec.x, vec.y, 5, 0, 2 * Math.PI)
+    @ctx.fill()
+    @ctx.beginPath()
+    @ctx.arc(perp1.x, perp1.y, 5, 0, 2 * Math.PI)
+    @ctx.fill()
+    @ctx.beginPath()
+    @ctx.arc(perp2.x, perp2.y, 5, 0, 2 * Math.PI)
+    @ctx.fill()
+
+    @draw_cubic_curve(src, perp1, perp2, src)
+    # @ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
+    # @ctx.stroke()
 
   singlenode_arc_origin: (src, r=40) ->
     pt = new app.Point(x: src.x, y: src.y)
@@ -471,6 +494,16 @@ class HMM
                 trg.y - (arrow_width * Math.cos(arrow_angle + shift)))
     @ctx.stroke()
     @ctx.restore()
+
+  ###
+  # Abstraction around bezierCurveTo using our Point object
+  # draws from src to trg, using ctrl1, ctrl2 as the beizer control-points
+  ###
+  draw_cubic_curve: (src, ctrl1, ctrl2, trg) ->
+    @ctx.beginPath()
+    @ctx.moveTo(src.x, src.y)
+    @ctx.bezierCurveTo(ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, trg.x, trg.y)
+    @ctx.stroke()
 
   ###
   # Abstraction around quadraticCurveTo using our Point object

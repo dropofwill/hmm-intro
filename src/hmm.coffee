@@ -141,13 +141,6 @@ class HMM
   quad_xy_at_percent: (src, ctrl, trg, percent) ->
     per = percent / 100
 
-    @ctx.save()
-    @ctx.fillStyle = "black"
-    @ctx.fillRect(src.x, src.y, 10, 10)
-    @ctx.fillRect(ctrl.x, ctrl.y, 10, 10)
-    @ctx.fillRect(trg.x, trg.y, 10, 10)
-    @ctx.restore()
-
     x = Math.pow(1-per, 2) * src.x  +
         2 * (1-per) * per  * ctrl.x +
         Math.pow(per, 2)   * trg.x

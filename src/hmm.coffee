@@ -111,20 +111,16 @@ class HMM
 
   draw_state: () ->
     if @transitioning
-      @transition_percent += 1
+      @transition_percent += 2
 
       if @current_link.ctrl?
-        @transition_percent += 1
         tmp_pt = @quad_xy_at_percent(@current_link.source, @current_link.ctrl,
                                      @current_link.target, @transition_percent)
       else
-        @transition_percent -= 0.5
-        arc = @singlenode_arc_origin(@current_link.source)
-        # start_angle = src.sub(@current_node).theta
-        node_coords = new app.Point(x: @current_node.x, y: @current_node.y)
-        start_angle = node_coords.sub(arc).theta
-        # l(start_angle * 180/Math.PI)
-        tmp_pt = @circle_xy_at_percent(arc, 40, @transition_percent, start_angle)
+        @transition_percent += 1
+        tmp_pt = @cubic_xy_at_percent(@current_link.source, @current_link.ctrl1,
+                                      @current_link.ctrl2, @current_link.source,
+                                      @transition_percent)
 
       @draw_node(tmp_pt, radius: 30, alpha: 0.35, fillStyle: "gray")
       @force.resume()
@@ -137,30 +133,44 @@ class HMM
       @force.resume()
 
   ###
-  # Math for animating along a quadratic curve from http://bit.ly/1GHKvTe
+  # Math for animating along a quad/cubic curve from http://bit.ly/1GHKvTe
   # See also: http://en.wikipedia.org/wiki/De_Casteljau's_algorithm
   # Takes the three points that define the curve, and a percent along it
   # either between 0 and 100
   ###
   quad_xy_at_percent: (src, ctrl, trg, percent) ->
     per = percent / 100
-
     x = Math.pow(1-per, 2) * src.x  +
         2 * (1-per) * per  * ctrl.x +
         Math.pow(per, 2)   * trg.x
     y = Math.pow(1-per, 2) * src.y  +
         2 * (1-per) * per  * ctrl.y +
         Math.pow(per, 2)   * trg.y
-    return new app.Point(x: x, y: y)
+    new app.Point(x: x, y: y)
+
+  cubic_xy_at_percent: (src, ctrl1, ctrl2, trg, percent) ->
+    per = percent / 100
+    x = @cubic_helper(per, src.x, ctrl1.x, ctrl2.x, trg.x)
+    y = @cubic_helper(per, src.y, ctrl1.y, ctrl2.y, trg.y)
+    new app.Point(x: x, y: y)
+
+  ###
+  # Here be the math magic, but really returns the value of a cubic function
+  # for a given set of parameters (a=src, b=ctrl1, c=ctrl2, d=trg) abreviated
+  # for readability as a math function
+  ###
+  cubic_helper: (percent, a, b, c, d) ->
+    t2 = percent * percent
+    t3 = t2 * percent
+    a + (-a * 3 + percent * (3 * a - a * percent)) * percent +
+    (3 * b + percent * (-6 * b + b * 3 * percent)) * percent +
+    (c * 3 - c * 3 * percent) * t2 + d * t3
 
   circle_xy_at_percent: (src, rad, percent, start_angle=0) ->
     angle = (percent / 100 * (360) * (Math.PI / 180)) + start_angle
     x = src.x + rad * Math.cos(angle)
     y = src.y + rad * Math.sin(angle)
     return new app.Point(x: x, y: y)
-
-  circle_xy_start: (node, arc) ->
-
 
   ###
   # Randomly select a node to start with using an even distribution
@@ -389,7 +399,7 @@ class HMM
       if not trg.equals(src)
         d.ctrl = @draw_multinode_arc(src, trg)
       else
-        @draw_singlenode_arc(src)
+        [d.ctrl1, d.ctrl2] = @draw_singlenode_arc(src)
 
     @ctx.restore()
 
@@ -445,7 +455,7 @@ class HMM
     return ctrl
 
   ###
-  # Draw an arc to the same node
+  # Draw an arc to the same node using a cubic curve
   ###
   draw_singlenode_arc: (src, r=70) ->
     pt = new app.Point(x: src.x, y: src.y)
@@ -468,6 +478,7 @@ class HMM
     @draw_cubic_curve(src, perp1, perp2, src)
     # @ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
     # @ctx.stroke()
+    return [perp1, perp2]
 
   singlenode_arc_origin: (src, r=40) ->
     pt = new app.Point(x: src.x, y: src.y)

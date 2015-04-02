@@ -68,7 +68,7 @@ window.onload = () ->
 
 
 ###
-# Generate an even probability, ergodic (fully-connected) data set
+# Generate an even probability, ergodic (fully-connected) data set, O(n^2)
 ###
 generate_data = (number_nodes) ->
   data = {}

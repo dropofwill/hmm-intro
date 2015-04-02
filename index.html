@@ -19,21 +19,21 @@
 
       <p>Observable Markov models (or just Markov models/chains) are kind of scary by default, who's Markov, what's observable, and why do I care? To make matters worse most textbooks start with a technical definition and some lambdas and letters for good measure. When in reality the concept is simple and acts as a building block for a number of sequential classifiers.</p>
 
-      <p>All Markov models are based around one simplifying assumption that a guy named Markov posited over a hundred years ago: what if the chance of the next event happening only depended on the previous event (or a set amount of previous events). We say this is simplifying, because in most cases its just not true, the real world is far more complex than that. So why even bother then? Because this assumption makes it possible for us to simulate and predict events efficiently with data we actually have.</p>
+      <p>All Markov models are based around one simplifying assumption that a guy named Markov posited over a hundred years ago: what if the chance of the next event depended on only the previous event (or a set amount of previous events). This is a simplifying assumption, because in most cases it's just not true, the real world is far more complex than that. So why even bother then? Because this assumption makes it possible for us to simulate and predict events efficiently with data we can actually collect.</p>
 
-      <p>So what sort of events can we predict with Markov models? Well, the classic example is the weather. Imagine we bucket the types of weather into two possible states, like cloudy and raining (the obvious choices for Rochester). We might look through the weather data in aggregate and find that there is a 50/50 chance of rain vs. clouds and decide that the best simulation we could make of the Rochester weather was effectively a coin toss: heads for rain, tails for clouds.</p>
+      <p>So what sort of events can we predict with Markov models? The classic textbook example is weather. Imagine we're predicting weather in Rochester and decide to bucket the weather into two possible states: cloudy and raining. We might look through the weather data in aggregate and find that there is a 50/50 chance of rain vs. clouds and decide that the best simulation we could make of the Rochester weather was effectively a coin toss: heads for rain, tails for clouds.</p>
 
-      <p>However, with a Markov model we can actually do better. By looking at the order of weather events in our data we uncover the fact that weather is sort of 'sticky', i.e. when its raining its more likely to stay raining than to change and vice versa. This is exactly the sort of information that can be encoded in a Markov model. Simply by increasing the probability of rainy \(\rightarrow\) rainy and cloudy \(\rightarrow\) cloudy to match the numbers uncovered in our data and suddenly the model performs much better than the old coin toss approach. Obviously, that's a contrived example, but Markov models are used in the real world all around you from the autocomplete on your phone to <a href="http://ilpubs.stanford.edu:8090/422/1/1999-66.pdf">Google's PageRank algorithm.</a></p>
+      <p>However, with a Markov model we can actually do better. By looking at the order of weather events in our data we uncover the fact that weather is sort of 'sticky', i.e. when raining its more likely to stay raining than to change and vice versa. This is exactly the sort of information that can be encoded in a Markov model. Simply by increasing the probability of rainy \(\rightarrow\) rainy and cloudy \(\rightarrow\) cloudy and suddenly the model's performance improves over the old coin toss approach. Obviously, this is a contrived example, but Markov models are used all around you in the real world as well, from the autocomplete on your phone to <a href="http://ilpubs.stanford.edu:8090/422/1/1999-66.pdf">Google's PageRank algorithm.</a></p>
 
       <h3>Instructions</h3>
 
-      <p>Each node in the graph below represents a state and each link represents the probability of transitioning from one node to the next. These correlate with the numbers in the transition matrix to the right, each number input represents the probability of going from the row node to the column node. Note that outgoing paths (rows) should sum to 1.</p>
+      <p>Each node in the graph below represents a state and each link represents the probability of transitioning from one node to the next. These correlate with the cells in the transition matrix, which represent the probability of going from the row node to the column node. Note that outgoing paths (rows) sum to 1, but that no such restriction is placed on columns.</p>
 
       <ul>
-        <li>Use '+' and '-' buttons to change the number of states</li>
-        <li>Use the 'Random Next' to change states based on the transition matrix</li>
+        <li>Use <button>+</button> and <button>-</button> buttons to change the number of states</li>
+        <li>Use the <button>Random Next</button> button to change states based on the transition matrix</li>
         <li>Adjust the probabilities for each link by typing a number between 0 and 1 into the box or use the up and down arrows beside it</li>
-        <li>Drag and drop the states to moves them around within the force layout</li>
+        <li>Drag and drop the nodes around to moves them around within the force layout</li>
       </ul>
 
       <hr>
@@ -55,7 +55,7 @@
 
       <hr>
 
-      <p>You might be wondering why I call these 'observable' Markov models. It's primarily emphasize that all the states are not hidden. For example finding out the whether its rainy or cloudy is something that can usually be automatically measured. A powerful extension built on top of Markov models are used to predict hidden states based on what can be observed. For example using the weather (observable) to predict ice cream sales (hidden) or a more exciting example converting raw speech sound waves (observable) to text (hidden). But that's another visualization for another day.</p>
+      <p>You might be wondering why I call these 'observable' Markov models. It's to emphasize that all the states are not hidden. For example finding out the whether its rainy or cloudy is something that can usually be automatically measured. A powerful extension built on top of Markov models can be used to predict hidden states based on what can be observed. For example using the weather (observable) to predict ice cream sales (hidden) or converting raw speech sound waves (observable) to text (hidden). But that's another visualization for another day.</p>
     </div>
 
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>

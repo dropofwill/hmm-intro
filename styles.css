@@ -21,6 +21,10 @@ hr {
   clear: both;
 }
 
+li {
+  margin: 1em 0;
+}
+
 .hide {
   display: none
 }

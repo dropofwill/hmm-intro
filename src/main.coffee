@@ -1,5 +1,6 @@
-app = window.configApp()
+"use strict"
 
+app = window.configApp()
 app.example = undefined
 
 ###

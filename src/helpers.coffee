@@ -1,3 +1,4 @@
+"use strict"
 ### Dev Mode: console.logs are running
 # window.DEBUG = true
 # Prod Mode: console.logs are off

@@ -1,3 +1,5 @@
+"use strict"
+
 app = window.configApp()
 
 ### exit if already defined ###

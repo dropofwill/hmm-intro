@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Hidden Markov Model Explained Visually - Will Paul</title>
+    <title>Observable Markov Models</title>
     <meta name="description" content="Hidden Markov Model Explained Visually - Will Paul">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -19,9 +19,95 @@
 
       <h2>Intro</h2>
 
+      $$ \lambda = (Q, A) $$
+
+      $$ Q = q_{1}q_{2}...q_{N} $$ a set of <em>N</em> states
+
+      $$ A = a_{11}a_{12}...a_{n1}..a_{nn} $$ an <em>NxN</em> transition probability matrix
+
+      <p>...</p>
+
+      <p>The above is the beginning of a formal definition of a simple Markov model. While formalism is an important part of mathematics, I think its best to approach formal definitions <em>after</em> developing an intuition about what the underlying process is all about. And what better way to do that than through an interactive visualization?</p>
+
       <h2>Design &amp; technical motivations</h2>
 
+      <p>The goal was to represent a mathematical concept with as little math as possible. At first I thought this would mean that the visualization would require certain knowledge dependencies and that I would need to either link out or explain: conditional probability, finite state automata, transducers, etc. In the end I decided to avoid going into any depth about these to keep the wall of text surrounding the visualization to an absolute minimum.</p>
+
+      <p>I decided to use a force layout originally to facilitate organization of the nodes, of course now that I see how it lays out the nodes it would have been possible to do this without any physics. However, I do think having them bob around and unfold as they roll adds to the fun of the interaction, so I still think it was a good choice.</p>
+
       <h2>Project requirements</h2>
+      <ul>
+        <li>
+          Uses sound and/or other media appropriately
+          <br>
+          <em>Sound was not required, because this isn't a game. All other media was generated progromatically.</em>
+        </li>
+        <li>
+          Uses canvas and bitmap images appropriately, with a consistent visual style; images are properly sized and optimized.
+          <br>
+          <em>Visual style is fairly consistent, minimal and clean with color consistency throughout the visualization. No images to optimize.</em>
+        </li>
+        <li>
+          Uses an embedded or Web font to good effect
+          <br>
+          <em>Used Merriweather for all long form text and Merriweather Sans for the actual visualization. Math-y stuff set in </em> \(\LaTeX\)
+        </li>
+        <li>
+          Experience is compelling, meaningful and enjoyable
+          <br>
+          <em>Subjective, but I think its fun. Others will have to be the judge of whether its meaningful/useful since I already know the topic pretty well.</em>
+        </li>
+        <li>
+          User has appropriate control over sprites or the environment
+          <br>
+          <em>Nodes are draggable, the number of nodes can be changed within reason (I limit the max), state transitions are triggered by the user, and the probabilities can be changed for each transition.</em>
+        </li>
+        <li>
+          Controls are responsive and intuitive
+          <br>
+          <em>It works on mobile, especially in landscape mode, though still a better experience on the desktop. Nothing to out of the ordinary as far as controls go, used all standard input elements and drag/drop behavior.</em>
+        </li>
+        <li>
+          Includes different screens, as noted above
+          <br>
+          <em>Has a project, documentation, and credits page.</em>
+        </li>
+        <li>
+          Includes necessary instructions, and the game isn’t needlessly hard
+          <br>
+          <em>Includes a bit of descriptive text around the visualization.</em>
+        </li>
+        <li>
+          Provides good feedback
+          <br>
+          <em>This whole visualization is about state transitions so making that apparent to the user was an important design consideration.</em>
+        </li>
+        <li>
+          Code is clean and runs without errors
+          <br>
+          <em>no errors on the target browsers, could be shimmed to expand browser support slightly, but its mostly canvas holding it back.</em>
+        </li>
+        <li>
+          Code is properly formatted and commented
+          <br>
+          <em>Every function (or group of functions) has clarification/explanation text.</em>
+        </li>
+        <li>
+          Proper use of the JS module pattern, object literals, and at least 2 function constructors
+        </li>
+        <li>
+          All required documentation checkpoints are met
+        </li>
+        <li>
+          Final project is properly documented
+        </li>
+        <li>
+          Documentation includes citations for external materials used
+        </li>
+        <li>
+          Extra “above and beyond” 10
+        </li>
+      </ul>
 
       <h2>Why its cool</h2>
 
@@ -62,7 +148,7 @@
 
       <p>The arrows at the tips of the quadratic curves used <a href="http://bit.ly/1IIDTDa">this guy on Stackoverflow's math.</a></p>
 
-      <p>Animating on Bezier curves (quadratic and cubic) uses <a href="http://en.wikipedia.org/wiki/De_Casteljau's_algorithm">De Casteljau's algorithm</a>, <a href="http://bit.ly/1GHKvTe">as proposed by this guy on Stackoverflow.</a></p>
+      <p>Animating on Bezier curves (quadratic and cubic) uses <a href="http://en.wikipedia.org/wiki/De_Casteljau's_algorithm">De Casteljau's algorithm</a>, <a href="http://bit.ly/1GHKvTe">as proposed by this guy on Stackoverflow.</a> Also [Pomax's interactive Bezier intro](http://pomax.github.io/bezierinfo/) was very useful at just wrapping my mind around how these work.</p>
 
 
       <p><a href="http://www.informit.com/articles/article.aspx?p=1834699&amp;seqNum=4">This code lets you have variable length argument lists:</a></p>
@@ -83,10 +169,6 @@
       (function() {}).call(this)
       // Instead of
       (function() {})()
-      </code></pre>
-
-
-      <pre><code>
       </code></pre>
 
     </div>

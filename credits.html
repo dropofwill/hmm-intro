@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Observable Markov Models</title>
+    <meta name="description" content="Hidden Markov Model Explained Visually - Will Paul">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <link href='http://fonts.googleapis.com/css?family=Merriweather:400,900italic,900,700italic,700,400italic,300italic,300&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="content">
+      <h1>Credits - Observable Markov Models</h1>
+      <h3>by Will Paul <a href="index.html">Project</a> | <a href="docs.html">Docs</a></h3>
+
+      <h2>Content</h2>
+
+      <p>Most of what I know about Markov processes is from Jurafsky and Martin's NLP textbook:</p>
+
+      <p>Daniel Jurafsky and James H. Martin. 2000. <em>Speech and Language Processing: An Introduction to Natural Language Processing</em>, Computational Linguistics, and Speech Recognition (1st ed.). Prentice Hall PTR, Upper Saddle River, NJ, USA.</p>
+
+      <h2>Libraries</h2>
+
+      <ul>
+        <li>
+          <em><a href="http://github.com/mbostock/d3"><strong>D3.js</strong></a>, "D3.js is a JavaScript library for manipulating documents based on data."</em>
+
+          <ul>
+            <li>Implements the math/physics for the force layout, but none of the rendering.</li>
+            <li>Some convenience methods for manipulating data (e.g. color and linear scales)</li>
+            <li>Light abstraction around events (e.g. combining touch and click events)</li>
+          </ul>
+        </li>
+        <li>
+          <em><a href="https://lodash.com/"><strong>Lodash.js</strong></a>, "A JavaScript utility library delivering consistency, modularity, performance, &amp; extras."</em>
+
+          <ul>
+            <li>Used wherever you see the `_` function, fixes problems with JavaScripts collection methods. I primarily use it to make array/object methods chainable and to take a little more functional approach to writing loops.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h2>Borrowed code/ideas</h2>
+
+      <p>The Point object is modeled after Processing's PVector and Paper's Point.</p>
+
+      <p>The arrows at the tips of the quadratic curves used <a href="http://bit.ly/1IIDTDa">this guy on Stackoverflow's math.</a></p>
+
+      <p>Animating on Bezier curves (quadratic and cubic) uses <a href="http://en.wikipedia.org/wiki/De_Casteljau's_algorithm">De Casteljau's algorithm</a>, <a href="http://bit.ly/1GHKvTe">as proposed by this guy on Stackoverflow.</a> Also [Pomax's interactive Bezier intro](http://pomax.github.io/bezierinfo/) was very useful at just wrapping my mind around how these work.</p>
+
+
+      <p><a href="http://www.informit.com/articles/article.aspx?p=1834699&amp;seqNum=4">This code lets you have variable length argument lists:</a></p>
+
+      <pre><code>
+      vals = 1 &lt;= arguments.length ? slice.call(arguments, 0) : [];
+
+      // Somewhere later...
+      app.some_function.apply(some_scope, vals);
+      </code></pre>
+
+      <p>Using `void 0` instead of `undefined` is a safer since it is a statement (that <em>always</em> returns undefined) and thus cannot be overwritten (undefined can). <a href="http://stackoverflow.com/questions/7452341/what-does-void-0-mean">Discussion here</a></p>
+
+      <p><a href="http://stackoverflow.com/questions/8035822/why-write-callthis-at-the-end-of-an-javascript-anonyms-function">Scope management for your IFFEs:</a></p>
+
+      <pre><code>
+      // IFFE with:
+      (function() {}).call(this)
+      // Instead of
+      (function() {})()
+      </code></pre>
+
+    </div>
+
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+  </body>
+</html>
+

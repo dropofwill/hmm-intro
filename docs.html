@@ -144,6 +144,22 @@
 
       <h2>Why it's cool</h2>
 
+      <p>Obviously, since it's not a game so not much of Blastem carried over into this implementation, other than some high level JS and Canvas concepts. Some of the things that I think make it cool that I figured out on my own.</p>
+
+      <ul>
+        <li>Implement D3's physics capabilities, while I have use D3 before, not with canvas. It handles a lot more of the grunt work when your dealing with SVG, so using it with canvas was (a mostly undocumented) learning experience.</li>
+
+        <li>Implement the Markov model probability simulation and integrate it with user input</li>
+
+        <li>Implement my own Point object to abstract away the complexities of the canvas drawing math.</li>
+
+        <li>Quadratic and cubic curves and animations along them.</li>
+
+        <li>Dynamic node and matrix table generation, just try the - and + buttons to see it in action.</li>
+
+        <li>Draggable nodes for pointless, but fun interactivity</li>
+      </ul>
+
       <h2>Issues &amp; future work</h2>
 
       <p>I originally intended on visualizing the <em>hidden</em> Markov process, as it has more exciting applications (used in machine translation, speech recognition, autocomplete, basically anything where your trying to uncover something about a sequence where order matters). However, making a compelling visualization requires implementing the Forward, Forward-Backward, and Viterbi algorithms, which while doable was definitely out of scope for this project. I hope to extend this project in the future to include those as well.</p>

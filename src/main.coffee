@@ -16,3 +16,6 @@ window.onload = () ->
       .insert("table", ":first-child")
 
     app.example = new app.HMM(data, canvas, matrix_el, 1)
+
+    next_el = d3.select("#js-mm-next-1")
+      .on("click", () -> app.example.select_next_node())

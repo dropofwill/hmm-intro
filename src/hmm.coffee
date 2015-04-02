@@ -40,10 +40,14 @@ class HMM
     @setup_matrix(@matrix_el, @force.nodes(), @force.links())
 
     @drag_node = undefined
+    @transitioning = false
+    @transition_percent = 0
     @current_node = @select_initial_node()
-    @state_loop()
+    @current_link
+    @current_point #= new app.Point(x: @current_node.x, y: @current_node.y)
 
-    l(@get_links_from(@current_node.index))
+    # l(@get_links_from(@current_node.index))
+    # @select_next_node()
 
   ###
   # d3's implementation of a force layout handles all of the physics math
@@ -54,7 +58,7 @@ class HMM
       .nodes(@graph.nodes)
       .links(@graph.links)
       .size([@width, @height])
-      .alpha(0.001)
+      .alpha(0.01)
       .linkDistance(@link_dist)
       .on("tick", @tick)
       .start()
@@ -101,28 +105,71 @@ class HMM
   tick: () =>
     @ctx.clearRect(0, 0, @width, @height)
 
-    @graph.links.forEach (d) =>
-      @draw_arc(d, lineWidth: @prob_scale(d.prob))
+    @graph.links.forEach (d) => @draw_arc(d, lineWidth: @prob_scale(d.prob))
     @graph.nodes.forEach (d) => @draw_node(d)
-
-  state_loop: () ->
-    l("yolo")
-    if @current_node?
-      @draw_node(@current_node, radius: 35, alpha: 0.35)
+    @draw_state()
 
   ###
-  # Math for animating along a quadratic curve from http://bit.ly/1GHKvTe
+  # Animate state transitions along the links or sitting at the current state
+  # Called by the "tick" handler, to trigger a state transition change the
+  # transitioning variable to true
+  ###
+  draw_state: () ->
+    if @transitioning
+      @transition_percent += 2
+
+      if @current_link.ctrl?
+        tmp_pt = @quad_xy_at_percent(@current_link.source, @current_link.ctrl,
+                                     @current_link.target, @transition_percent)
+      else
+        @transition_percent += 1
+        tmp_pt = @cubic_xy_at_percent(@current_link.source, @current_link.ctrl1,
+                                      @current_link.ctrl2, @current_link.source,
+                                      @transition_percent)
+
+      @draw_node(tmp_pt, radius: 30, alpha: 0.35, fillStyle: "gray")
+      @force.resume()
+
+      if @transition_percent >= 100
+        @transition_percent = 0
+        @transitioning = false
+    else
+      @draw_node(@current_node, radius: 30, alpha: 0.35, fillStyle: "gray")
+      @force.resume()
+
+  ###
+  # Math for animating along a quad/cubic curve from http://bit.ly/1GHKvTe
   # See also: http://en.wikipedia.org/wiki/De_Casteljau's_algorithm
+  # Takes the three points that define the curve, and a percent along it
+  # either between 0 and 100
   ###
-  quad_xy_at_percent: (src, ctrl, trg, per) ->
-    rev_per = 1-per
-    x = Math.pow(rev_per, 2) * src.x  +
-        2 * rev_per * per    * ctrl.x +
-        Math.pow(per, 2)     * trg.x
-    y = Math.pow(rev_per, 2) * src.y  +
-        2 * rev_per * per    * ctrl.y +
-        Math.pow(per, 2)     * trg.y
-    return new Point(x: x, y: y)
+  quad_xy_at_percent: (src, ctrl, trg, percent) ->
+    per = percent / 100
+    x = Math.pow(1-per, 2) * src.x  +
+        2 * (1-per) * per  * ctrl.x +
+        Math.pow(per, 2)   * trg.x
+    y = Math.pow(1-per, 2) * src.y  +
+        2 * (1-per) * per  * ctrl.y +
+        Math.pow(per, 2)   * trg.y
+    new app.Point(x: x, y: y)
+
+  cubic_xy_at_percent: (src, ctrl1, ctrl2, trg, percent) ->
+    per = percent / 100
+    x = @cubic_helper(per, src.x, ctrl1.x, ctrl2.x, trg.x)
+    y = @cubic_helper(per, src.y, ctrl1.y, ctrl2.y, trg.y)
+    new app.Point(x: x, y: y)
+
+  ###
+  # Here be the math magic, but really returns the value of a cubic function
+  # for a given set of parameters (a=src, b=ctrl1, c=ctrl2, d=trg) abreviated
+  # for readability as a math function
+  ###
+  cubic_helper: (percent, a, b, c, d) ->
+    t2 = percent * percent
+    t3 = t2 * percent
+    a + (-a * 3 + percent * (3 * a - a * percent)) * percent +
+    (3 * b + percent * (-6 * b + b * 3 * percent)) * percent +
+    (c * 3 - c * 3 * percent) * t2 + d * t3
 
   ###
   # Randomly select a node to start with using an even distribution
@@ -132,6 +179,12 @@ class HMM
     p = 1/@size
     @graph.nodes.forEach((n) -> n.prob = p)
     @prob_random(@graph.nodes)
+
+  select_next_node: () ->
+    links = @get_links_from(@current_node.index)
+    @transitioning = true
+    @current_link = @prob_random(links)
+    @current_node = @current_link.target
 
   ###
   # Takes a list of objects that respond to the prob_key with a float between
@@ -303,6 +356,9 @@ class HMM
     src: arr[1]
     trg: arr[2]
 
+  ###
+  # Higher order function for grabbing all the links related to a node index
+  ###
   get_links: (sub_node, index) ->
     @graph.links.filter((l) -> l[sub_node].index is index)
 
@@ -343,10 +399,9 @@ class HMM
     # Check for edges going to the same node
     if opts.lineWidth isnt 0
       if not trg.equals(src)
-        @draw_multinode_arc(src, trg)
+        d.ctrl = @draw_multinode_arc(src, trg)
       else
-        @draw_singlenode_arc(src)
-
+        [d.ctrl1, d.ctrl2] = @draw_singlenode_arc(src)
     @ctx.restore()
 
   ###
@@ -360,15 +415,12 @@ class HMM
     @ctx.globalAlpha = opts.alpha     ?= 1
     radius           = opts.radius    ?= @node_radius
 
-    if not d.hidden
-      @ctx.beginPath()
-      @ctx.moveTo(d.x, d.y)
-      @ctx.arc(d.x, d.y, radius, 0, 2 * Math.PI)
-      @ctx.fill()
+    @ctx.beginPath()
+    @ctx.moveTo(d.x, d.y)
+    @ctx.arc(d.x, d.y, radius, 0, 2 * Math.PI)
+    @ctx.fill()
 
-    if not d.hidden and draw_text
-      @draw_text(@num_to_alpha(d.index), d.x, d.y)
-
+    @draw_text(@num_to_alpha(d.index), d.x, d.y) if draw_text
     @ctx.restore()
 
   draw_text: (text, x, y, opts={}) ->
@@ -400,15 +452,20 @@ class HMM
 
     @draw_quad_curve(src, ctrl, trg)
     @draw_quad_arrow(src, ctrl, trg)
+    ctrl
 
   ###
-  # Draw an arc to the same node
+  # Draw an arc to the same node using a cubic curve
   ###
-  draw_singlenode_arc: (src, r=40) ->
-    @ctx.beginPath()
-    vec = src.sub(@center).normalize().mul(r).add(src)
-    @ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
-    @ctx.stroke()
+  draw_singlenode_arc: (src, r=70) ->
+    pt = new app.Point(x: src.x, y: src.y)
+    pos = pt.sub(@center).normalize()
+    vec = pos.mul(r).add(pt)
+    perp1 = new app.Point(x: pos.y, y: -pos.x).mul(r*1.5).add(vec)
+    perp2 = new app.Point(x: -pos.y, y: pos.x).mul(r*1.5).add(vec)
+
+    @draw_cubic_curve(src, perp1, perp2, src)
+    [perp1, perp2]
 
   ###
   # Draw a simple arrow along a quadratic curved path
@@ -431,6 +488,16 @@ class HMM
                 trg.y - (arrow_width * Math.cos(arrow_angle + shift)))
     @ctx.stroke()
     @ctx.restore()
+
+  ###
+  # Abstraction around bezierCurveTo using our Point object
+  # draws from src to trg, using ctrl1, ctrl2 as the beizer control-points
+  ###
+  draw_cubic_curve: (src, ctrl1, ctrl2, trg) ->
+    @ctx.beginPath()
+    @ctx.moveTo(src.x, src.y)
+    @ctx.bezierCurveTo(ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, trg.x, trg.y)
+    @ctx.stroke()
 
   ###
   # Abstraction around quadraticCurveTo using our Point object

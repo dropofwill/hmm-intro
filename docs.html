@@ -29,6 +29,14 @@
 
       <p>The above is the beginning of a formal definition of a simple Markov model. While formalism is an important part of mathematics, I think its best to approach formal definitions <em>after</em> developing an intuition about what the underlying process is all about. And what better way to do that than through an interactive visualization?</p>
 
+      <img src="scrot-default.png" alt="default visualization state screenshot">
+
+      <p><em>Screenshot of the default visualization state</em></p>
+
+      <img src="scrot-four.png" alt="visualization with some user changes">
+
+      <p><em>Screenshot of the visualization after some user interactions</em></p>
+
       <h2>Design &amp; technical motivations</h2>
 
       <p>The goal was to represent a mathematical concept with as little math as possible. At first I thought this would mean that the visualization would require certain knowledge dependencies and that I would need to either link out or explain: conditional probability, finite state automata, transducers, etc. In the end I decided to avoid going into any depth about these to keep the wall of text surrounding the visualization to an absolute minimum.</p>
@@ -42,89 +50,109 @@
           <br>
           <em>Sound was not required, because this isn't a game. All other media was generated progromatically.</em>
         </li>
+
         <li>
           Uses canvas and bitmap images appropriately, with a consistent visual style; images are properly sized and optimized.
           <br>
           <em>Visual style is fairly consistent, minimal and clean with color consistency throughout the visualization. No images to optimize.</em>
         </li>
+
         <li>
           Uses an embedded or Web font to good effect
           <br>
           <em>Used Merriweather for all long form text and Merriweather Sans for the actual visualization. Math-y stuff set in </em> \(\LaTeX\)
         </li>
+
         <li>
           Experience is compelling, meaningful and enjoyable
           <br>
-          <em>Subjective, but I think its fun. Others will have to be the judge of whether its meaningful/useful since I already know the topic pretty well.</em>
+          <em>Subjective, but I think it's fun. Others will have to be the judge of whether it's meaningful/useful since I already know the topic pretty well.</em>
         </li>
+
         <li>
           User has appropriate control over sprites or the environment
           <br>
           <em>Nodes are draggable, the number of nodes can be changed within reason (I limit the max), state transitions are triggered by the user, and the probabilities can be changed for each transition.</em>
         </li>
+
         <li>
           Controls are responsive and intuitive
           <br>
           <em>It works on mobile, especially in landscape mode, though still a better experience on the desktop. Nothing to out of the ordinary as far as controls go, used all standard input elements and drag/drop behavior.</em>
         </li>
+
         <li>
           Includes different screens, as noted above
           <br>
           <em>Has a project, documentation, and credits page.</em>
         </li>
+
         <li>
           Includes necessary instructions, and the game isn’t needlessly hard
           <br>
           <em>Includes a bit of descriptive text around the visualization.</em>
         </li>
+
         <li>
           Provides good feedback
           <br>
           <em>This whole visualization is about state transitions so making that apparent to the user was an important design consideration.</em>
         </li>
+
         <li>
           Code is clean and runs without errors
           <br>
-          <em>No errors on the target browsers, could be shimmed to expand browser support slightly, but its mostly canvas holding it back.</em>
+          <em>No errors on the target browsers, could be shimmed to expand browser support slightly, but it's mostly canvas holding it back.</em>
         </li>
+
         <li>
           Code is properly formatted and commented
           <br>
           <em>Every function (or group of functions) has clarification/explanation text.</em>
         </li>
+
         <li>
           Proper use of the JS module pattern, object literals, and at least 2 function constructors
           <br>
           <em>Module pattern followed, "use strict" for every file, object literals everywhere, constructor functions for the HMM and Point objects with prototypes for their internal functions, `var` used to declare variables (always at the top of the function to avoid hoisting problems), no `console.log` in production.</em>
         </li>
+
         <li>
           All required documentation checkpoints are met
           <br>
           <em>Yep.</em>
         </li>
+
         <li>
           Final project is properly documented
           <br>
           <em>See this page and the <a href="credits.html">credits page.</a></em>
         </li>
+
         <li>
           Documentation includes citations for external materials used
           <br>
           <em>See the <a href="credits.html">credits page.</a></em>
         </li>
+
         <li>
           Extra “above and beyond”
           <br>
-          <em>See "Why its cool" below.</em>
+          <em>See "Why it's cool" below.</em>
         </li>
       </ul>
 
-      <h2>Why its cool</h2>
+      <h2>Why it's cool</h2>
 
       <h2>Issues &amp; future work</h2>
+
+      <p>I originally intended on visualizing the <em>hidden</em> Markov process, as it has more exciting applications (used in machine translation, speech recognition, autocomplete, basically anything where your trying to uncover something about a sequence where order matters). However, making a compelling visualization requires implementing the Forward, Forward-Backward, and Viterbi algorithms, which while doable was definitely out of scope for this project. I hope to extend this project in the future to include those as well.</p>
+
+      <p>The biggest issue I ran into was drawing the curves appropriately. At first I was trying to do it with cos and sin directly, but I quickly realized that the code was getting unreadable fast and that it was taking way too much time figuring all that out. So I decided to implement my Point/Vector object, which is really just a light abstraction over what I was already doing, but makes life so much easier in terms of wrapping your head around it immediately and of course five minutes later when you've forgotten everything you just did</p>
+
+      <p>The biggest outstanding bug is with the matrix table and the rows summing to 1. It is fairly robust, but since it still deals with JS floats rounding errors do happen (0.1 is repeating in binary). To fix this I need to deal with ints and convert back and forth between them and floats, but since it doesn't effect the actual probabilities in the simulation and the errors are always very small, I decided to focus on the other aspects of the project instead.</p>
     </div>
 
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
   </body>
 </html>
-

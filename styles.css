@@ -29,6 +29,10 @@ li {
   display: none
 }
 
+img {
+  max-width: 100%;
+}
+
 .content {
   max-width: 60em;
   width: 100%;

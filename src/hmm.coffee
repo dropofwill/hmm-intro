@@ -166,12 +166,6 @@ class HMM
     (3 * b + percent * (-6 * b + b * 3 * percent)) * percent +
     (c * 3 - c * 3 * percent) * t2 + d * t3
 
-  circle_xy_at_percent: (src, rad, percent, start_angle=0) ->
-    angle = (percent / 100 * (360) * (Math.PI / 180)) + start_angle
-    x = src.x + rad * Math.cos(angle)
-    y = src.y + rad * Math.sin(angle)
-    return new app.Point(x: x, y: y)
-
   ###
   # Randomly select a node to start with using an even distribution
   # Returns the actual node
@@ -464,25 +458,8 @@ class HMM
     perp1 = new app.Point(x: pos.y, y: -pos.x).mul(r*1.5).add(vec)
     perp2 = new app.Point(x: -pos.y, y: pos.x).mul(r*1.5).add(vec)
 
-    @ctx.fillStyle = "black"
-    @ctx.beginPath()
-    @ctx.arc(vec.x, vec.y, 5, 0, 2 * Math.PI)
-    @ctx.fill()
-    @ctx.beginPath()
-    @ctx.arc(perp1.x, perp1.y, 5, 0, 2 * Math.PI)
-    @ctx.fill()
-    @ctx.beginPath()
-    @ctx.arc(perp2.x, perp2.y, 5, 0, 2 * Math.PI)
-    @ctx.fill()
-
     @draw_cubic_curve(src, perp1, perp2, src)
-    # @ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
-    # @ctx.stroke()
     return [perp1, perp2]
-
-  singlenode_arc_origin: (src, r=40) ->
-    pt = new app.Point(x: src.x, y: src.y)
-    vec = pt.sub(@center).normalize().mul(r).add(pt)
 
   ###
   # Draw a simple arrow along a quadratic curved path

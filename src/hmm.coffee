@@ -112,16 +112,21 @@ class HMM
   draw_state: () ->
     if @transitioning
       @transition_percent += 1
-      l(@current_link)
-      tmp_pt = @quad_xy_at_percent(@current_link.source,
-                                    @current_link.ctrl,
-                                    @current_link.target,
-                                    @transition_percent)
+
+      if @current_link.ctrl?
+        tmp_pt = @quad_xy_at_percent(@current_link.source, @current_link.ctrl,
+                                     @current_link.target, @transition_percent)
+      else
+        src = @singlenode_arc_origin(@current_link.source)
+        start_angle = src.sub(@current_node).theta
+        l(start_angle * 180/Math.PI)
+        tmp_pt = @circle_xy_at_percent(src, 40, @transition_percent, start_angle)
 
       @draw_node(tmp_pt, radius: 30, alpha: 0.35, fillStyle: "gray")
       @force.resume()
 
       if @transition_percent >= 100
+        @transition_percent = 0
         @transitioning = false
     else
       @draw_node(@current_node, radius: 30, alpha: 0.35, fillStyle: "gray")
@@ -136,16 +141,26 @@ class HMM
   quad_xy_at_percent: (src, ctrl, trg, percent) ->
     per = percent / 100
 
+    @ctx.save()
+    @ctx.fillStyle = "black"
+    @ctx.fillRect(src.x, src.y, 10, 10)
+    @ctx.fillRect(ctrl.x, ctrl.y, 10, 10)
+    @ctx.fillRect(trg.x, trg.y, 10, 10)
+    @ctx.restore()
+
     x = Math.pow(1-per, 2) * src.x  +
-        2 * 1-per * per    * ctrl.x +
+        2 * (1-per) * per  * ctrl.x +
         Math.pow(per, 2)   * trg.x
     y = Math.pow(1-per, 2) * src.y  +
-        2 * 1-per * per    * ctrl.y +
+        2 * (1-per) * per  * ctrl.y +
         Math.pow(per, 2)   * trg.y
     return new app.Point(x: x, y: y)
 
-  circle_xy_at_percent: (src, rad, per) ->
-
+  circle_xy_at_percent: (src, rad, percent, start_angle=0) ->
+    angle = percent / 100 * (360 - start_angle) * (Math.PI / 180)
+    x = src.x + rad * Math.cos(angle)
+    y = src.y + rad * Math.sin(angle)
+    return new app.Point(x: x, y: y)
 
   ###
   # Randomly select a node to start with using an even distribution
@@ -434,9 +449,13 @@ class HMM
   ###
   draw_singlenode_arc: (src, r=40) ->
     @ctx.beginPath()
-    vec = src.sub(@center).normalize().mul(r).add(src)
+    vec = @singlenode_arc_origin(src, r)
     @ctx.arc(vec.x, vec.y, r, 0, 2 * Math.PI)
     @ctx.stroke()
+
+  singlenode_arc_origin: (src, r=40) ->
+    pt = new app.Point(x: src.x, y: src.y)
+    vec = pt.sub(@center).normalize().mul(r).add(pt)
 
   ###
   # Draw a simple arrow along a quadratic curved path

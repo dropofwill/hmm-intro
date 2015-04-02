@@ -59,6 +59,7 @@ class HMM
       .links(@graph.links)
       .size([@width, @height])
       .alpha(0.01)
+      .friction(0.1)
       .linkDistance(@link_dist)
       .on("tick", @tick)
       .start()

@@ -31,6 +31,11 @@ window.onload = () ->
   next_el = d3.select("#js-mm-next-1")
     .on("click", () -> app.example.select_next_node())
 
+  ###
+  # Handlers for restarting the visualization with new data
+  # Need to delete all the children of the matrix for it to update properly
+  # Hide button when min or max is reached
+  ###
   plus_el = d3.select("#js-mm-plus-1")
     .on("click", () ->
       number_nodes += 1 if number_nodes < max_nodes
@@ -76,6 +81,10 @@ generate_data = (number_nodes) ->
                        source: n, target: m, prob: even_prob)))
   return data
 
+###
+# Borrowed from Stackoverflow: http://bit.ly/19LTipU
+# Efficiently deletes all the children of a given DOM node
+###
 delete_children = (node) ->
   while node.firstChild
     node.removeChild(node.firstChild)

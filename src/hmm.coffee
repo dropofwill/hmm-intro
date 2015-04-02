@@ -46,10 +46,6 @@ class HMM
     @transition_percent = 0
     @current_node = @select_initial_node()
     @current_link
-    @current_point #= new app.Point(x: @current_node.x, y: @current_node.y)
-
-    # l(@get_links_from(@current_node.index))
-    # @select_next_node()
 
   ###
   # d3's implementation of a force layout handles all of the physics math
@@ -183,6 +179,9 @@ class HMM
     @graph.nodes.forEach((n) -> n.prob = p)
     @prob_random(@graph.nodes)
 
+  ###
+  # Select the next node based on the probabilities in the transition matrix
+  ###
   select_next_node: () ->
     links = @get_links_from(@current_node.index)
     @transitioning = true
@@ -426,6 +425,9 @@ class HMM
     @draw_text(@num_to_alpha(d.index), d.x, d.y) if draw_text
     @ctx.restore()
 
+  ###
+  # Simple text drawing helper, following the same API as the rest
+  ###
   draw_text: (text, x, y, opts={}) ->
     @ctx.save()
     @ctx.fillStyle = opts.fillStyle ?= "#fff"

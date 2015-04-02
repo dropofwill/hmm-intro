@@ -26,9 +26,9 @@ window.configGlobal = (prop) ->
   () ->
     window[prop] = window[prop] || {}
 
-  ###
-  # Inclusive random range between to floats a, b
-  ###
+###
+# Inclusive random range between to floats a, b
+###
 window.inc_random = (lower=0, upper=1) ->
     lower + Math.floor(Math.random() * (upper - lower + 1))
 

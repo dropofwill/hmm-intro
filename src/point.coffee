@@ -13,7 +13,7 @@ app = window.configApp()
 # or
 # @mag: vector magnitude, treated as positive
 # @theta: vector angle relative to coord system
-# inspired by Processing's vector implementation
+# inspired by Processing's PVector implementation
 ###
 class Point
   constructor: (opts) ->
@@ -72,11 +72,11 @@ class Point
   equals: (point) ->
     this is point or (@x is point.x and @y is point.y)
 
-  dot: (point) ->
-
-  cross: (point) ->
-
-  project: (point) ->
+  # dot: (point) ->
+  #
+  # cross: (point) ->
+  #
+  # project: (point) ->
 
   normalize: () ->
     if @mag isnt 0

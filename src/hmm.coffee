@@ -109,6 +109,11 @@ class HMM
     @graph.nodes.forEach (d) => @draw_node(d)
     @draw_state()
 
+  ###
+  # Animate state transitions along the links or sitting at the current state
+  # Called by the "tick" handler, to trigger a state transition change the
+  # transitioning variable to true
+  ###
   draw_state: () ->
     if @transitioning
       @transition_percent += 2
@@ -351,6 +356,9 @@ class HMM
     src: arr[1]
     trg: arr[2]
 
+  ###
+  # Higher order function for grabbing all the links related to a node index
+  ###
   get_links: (sub_node, index) ->
     @graph.links.filter((l) -> l[sub_node].index is index)
 
@@ -394,7 +402,6 @@ class HMM
         d.ctrl = @draw_multinode_arc(src, trg)
       else
         [d.ctrl1, d.ctrl2] = @draw_singlenode_arc(src)
-
     @ctx.restore()
 
   ###
@@ -414,7 +421,6 @@ class HMM
     @ctx.fill()
 
     @draw_text(@num_to_alpha(d.index), d.x, d.y) if draw_text
-
     @ctx.restore()
 
   draw_text: (text, x, y, opts={}) ->
@@ -446,7 +452,7 @@ class HMM
 
     @draw_quad_curve(src, ctrl, trg)
     @draw_quad_arrow(src, ctrl, trg)
-    return ctrl
+    ctrl
 
   ###
   # Draw an arc to the same node using a cubic curve
@@ -459,7 +465,7 @@ class HMM
     perp2 = new app.Point(x: -pos.y, y: pos.x).mul(r*1.5).add(vec)
 
     @draw_cubic_curve(src, perp1, perp2, src)
-    return [perp1, perp2]
+    [perp1, perp2]
 
   ###
   # Draw a simple arrow along a quadratic curved path
